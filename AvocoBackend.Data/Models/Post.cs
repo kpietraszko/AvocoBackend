@@ -12,5 +12,6 @@ namespace AvocoBackend.Data.Models
 		public int UserId { get; set; }
 		public User User { get; set; }
 		public string Content { get; set; }
+		public ICollection<PostComment> PostComments { get; set; }
 	}
 }

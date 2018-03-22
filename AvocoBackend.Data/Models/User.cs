@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace AvocoBackend.Data.Models
@@ -8,10 +9,19 @@ namespace AvocoBackend.Data.Models
 	{
 		public int UserId { get; set; }
 		public string EmailAddress { get; set; }
-		//hash hasla raczej w oddzielnej tabeli
 		public string PasswordHash { get; set; } 
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Region { get; set; }
+		public ICollection<Group> Groups { get; set; }
+		public ICollection<Event> Events { get; set; }
+		[InverseProperty("SenderUser")]
+		public ICollection<Message> SentMessages { get; set; }
+		[InverseProperty("RecipientUser")]
+		public ICollection<Message> ReceivedMessages { get; set; }
+		[InverseProperty("User1")]
+		public ICollection<Friend> FriendsInvited { get; set; }
+		[InverseProperty("User2")]
+		public ICollection<Friend> FriendsInvitedBy { get; set; }
 	}
 }

@@ -14,5 +14,8 @@ namespace AvocoBackend.Data.Models
 		public DateTime EventDateTime { get; set; }
 		public double EventLocationLat { get; set; }
 		public double EventLocationLng { get; set; }
+		public ICollection<EventComment> EventComments { get; set; }
+		public ICollection<User> Users { get; set; }
+
 	}
 }
