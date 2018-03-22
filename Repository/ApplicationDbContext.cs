@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Repository
 {
-    class ApiContext :DbContext
+    public class ApplicationDbContext :DbContext
     {
-		public ApiContext(DbContextOptions<ApiContext> options)
+		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
 			:base(options)
 		{
 		}

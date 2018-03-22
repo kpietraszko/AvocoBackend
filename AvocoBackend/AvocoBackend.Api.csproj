@@ -16,4 +16,9 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AvocoBackend.Data\AvocoBackend.Data.csproj" />
+    <ProjectReference Include="..\Repository\AvocoBackend.Repository.csproj" />
+  </ItemGroup>
+
 </Project>

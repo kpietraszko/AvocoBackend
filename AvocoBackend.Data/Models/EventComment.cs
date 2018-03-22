@@ -7,8 +7,7 @@ namespace AvocoBackend.Data.Models
 {
 	public class EventComment
 	{
-		[Key]
-		public int CommentId { get; set; }
+		public int EventCommentId { get; set; }
 		public int EventId { get; set; }
 		public Event Event { get; set; }
 		public int UserId { get; set; }
