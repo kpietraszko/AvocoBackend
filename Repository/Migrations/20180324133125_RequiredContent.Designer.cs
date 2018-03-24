@@ -11,8 +11,8 @@ using System;
 namespace AvocoBackend.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180323162644_initial")]
-    partial class initial
+    [Migration("20180324133125_RequiredContent")]
+    partial class RequiredContent
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,7 +50,8 @@ namespace AvocoBackend.Repository.Migrations
                     b.Property<int>("EventCommentId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Content");
+                    b.Property<string>("Content")
+                        .IsRequired();
 
                     b.Property<int>("EventId");
 
@@ -80,11 +81,13 @@ namespace AvocoBackend.Repository.Migrations
 
             modelBuilder.Entity("AvocoBackend.Data.Models.Friend", b =>
                 {
-                    b.Property<int?>("User1Id");
+                    b.Property<int>("User1Id");
 
-                    b.Property<int>("SecondUserId");
+                    b.Property<int>("User2Id");
 
-                    b.HasKey("User1Id", "SecondUserId");
+                    b.HasKey("User1Id", "User2Id");
+
+                    b.HasIndex("User2Id");
 
                     b.ToTable("Friends");
                 });
@@ -143,7 +146,7 @@ namespace AvocoBackend.Repository.Migrations
 
             modelBuilder.Entity("AvocoBackend.Data.Models.Message", b =>
                 {
-                    b.Property<int>("Messageid")
+                    b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("MessageContent");
@@ -152,7 +155,9 @@ namespace AvocoBackend.Repository.Migrations
 
                     b.Property<int>("SenderUserId");
 
-                    b.HasKey("Messageid");
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("RecipientUserId");
 
                     b.HasIndex("SenderUserId");
 
@@ -184,7 +189,8 @@ namespace AvocoBackend.Repository.Migrations
                     b.Property<int>("PostCommentId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Content");
+                    b.Property<string>("Content")
+                        .IsRequired();
 
                     b.Property<int>("PostId");
 
@@ -271,7 +277,12 @@ namespace AvocoBackend.Repository.Migrations
                     b.HasOne("AvocoBackend.Data.Models.User", "User1")
                         .WithMany("FriendsInvited")
                         .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AvocoBackend.Data.Models.User", "User2")
+                        .WithMany("FriendsInvitedBy")
+                        .HasForeignKey("User2Id")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("AvocoBackend.Data.Models.GroupInterest", b =>
@@ -302,10 +313,15 @@ namespace AvocoBackend.Repository.Migrations
 
             modelBuilder.Entity("AvocoBackend.Data.Models.Message", b =>
                 {
+                    b.HasOne("AvocoBackend.Data.Models.User", "RecipientUser")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("AvocoBackend.Data.Models.User", "SenderUser")
                         .WithMany("SentMessages")
                         .HasForeignKey("SenderUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("AvocoBackend.Data.Models.Post", b =>
@@ -326,7 +342,7 @@ namespace AvocoBackend.Repository.Migrations
                     b.HasOne("AvocoBackend.Data.Models.Post", "Post")
                         .WithMany("PostComments")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("AvocoBackend.Data.Models.User", "User")
                         .WithMany()

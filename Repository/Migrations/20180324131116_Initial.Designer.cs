@@ -11,9 +11,10 @@ using System;
 namespace AvocoBackend.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180324131116_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,8 +50,7 @@ namespace AvocoBackend.Repository.Migrations
                     b.Property<int>("EventCommentId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Content")
-                        .IsRequired();
+                    b.Property<string>("Content");
 
                     b.Property<int>("EventId");
 
@@ -188,8 +188,7 @@ namespace AvocoBackend.Repository.Migrations
                     b.Property<int>("PostCommentId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Content")
-                        .IsRequired();
+                    b.Property<string>("Content");
 
                     b.Property<int>("PostId");
 

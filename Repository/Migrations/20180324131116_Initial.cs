@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace AvocoBackend.Repository.Migrations
 {
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -106,17 +106,23 @@ namespace AvocoBackend.Repository.Migrations
                 columns: table => new
                 {
                     User1Id = table.Column<int>(nullable: false),
-                    SecondUserId = table.Column<int>(nullable: false)
+                    User2Id = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Friends", x => new { x.User1Id, x.SecondUserId });
+                    table.PrimaryKey("PK_Friends", x => new { x.User1Id, x.User2Id });
                     table.ForeignKey(
                         name: "FK_Friends_Users_User1Id",
                         column: x => x.User1Id,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Friends_Users_User2Id",
+                        column: x => x.User2Id,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -147,7 +153,7 @@ namespace AvocoBackend.Repository.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Messageid = table.Column<int>(nullable: false)
+                    MessageId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     MessageContent = table.Column<string>(nullable: true),
                     RecipientUserId = table.Column<int>(nullable: false),
@@ -155,13 +161,19 @@ namespace AvocoBackend.Repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.Messageid);
+                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_RecipientUserId",
+                        column: x => x.RecipientUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_Users_SenderUserId",
                         column: x => x.SenderUserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -284,7 +296,7 @@ namespace AvocoBackend.Repository.Migrations
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "PostId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PostsComments_Users_UserId",
                         column: x => x.UserId,
@@ -314,6 +326,11 @@ namespace AvocoBackend.Repository.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Friends_User2Id",
+                table: "Friends",
+                column: "User2Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GroupsInterests_InterestId",
                 table: "GroupsInterests",
                 column: "InterestId");
@@ -322,6 +339,11 @@ namespace AvocoBackend.Repository.Migrations
                 name: "IX_GroupsJoinedUsers_UserId",
                 table: "GroupsJoinedUsers",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_RecipientUserId",
+                table: "Messages",
+                column: "RecipientUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderUserId",

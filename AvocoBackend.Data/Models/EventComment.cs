@@ -12,6 +12,7 @@ namespace AvocoBackend.Data.Models
 		public Event Event { get; set; }
 		public int UserId { get; set; }
 		public User User { get; set; }
+		[Required]
 		public string Content { get; set; }
 
 	}
