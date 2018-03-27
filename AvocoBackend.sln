@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.27428.2011
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvocoBackend.Api", "AvocoBackend\AvocoBackend.Api.csproj", "{2AC279C8-6BB7-4094-9DEC-F5DF1856F951}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvocoBackend.Data", "AvocoBackend.Data\AvocoBackend.Data.csproj", "{47891387-282C-49FF-9A5C-E0E80EAF0820}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvocoBackend.Data", "AvocoBackend.Data\AvocoBackend.Data.csproj", "{47891387-282C-49FF-9A5C-E0E80EAF0820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvocoBackend.Repository", "Repository\AvocoBackend.Repository.csproj", "{2E3FBDA6-ED92-443F-944F-374D4846DAE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvocoBackend.Repository", "Repository\AvocoBackend.Repository.csproj", "{2E3FBDA6-ED92-443F-944F-374D4846DAE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

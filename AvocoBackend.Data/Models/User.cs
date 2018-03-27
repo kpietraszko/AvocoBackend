@@ -7,6 +7,10 @@ namespace AvocoBackend.Data.Models
 {
 	public class User
 	{
+		public User(string emailAdress) //HACK: usunać konstruktor
+		{
+			EmailAddress = emailAdress;
+		}
 		public int UserId { get; set; }
 		public string EmailAddress { get; set; }
 		public string PasswordHash { get; set; } 
