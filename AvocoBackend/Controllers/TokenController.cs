@@ -10,17 +10,20 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]")]
 	public class TokenController : Controller
 	{
-		private IConfiguration _config;
+		private IConfiguration _config; //dziala z DI
+		private IPasswordHasher<User> _passwordHasher;
 
-		public TokenController(IConfiguration config) //DI dziala
+		public TokenController(IConfiguration config, IPasswordHasher<User> passwordHasher)
 		{
 			_config = config;
+			_passwordHasher = passwordHasher;
 		}
 		
 		[AllowAnonymous]
@@ -31,7 +34,7 @@ namespace AvocoBackend.Api.Controllers
 			var user = Authenticate(loginModel); 
 			if(user != null)
 			{
-				var tokenString = BuildToken(user); //TODO: zaimplementowac
+				var tokenString = BuildToken(user);
 				response = Ok(new { token = tokenString });
 			}
 			return response;
@@ -40,7 +43,9 @@ namespace AvocoBackend.Api.Controllers
 		{
 			User user = null;
 			//TODO: spr email z bazą, zahashuj haslo i porownac z hashem z bazy
-			if (loginModel.Email == "user@example.com" && loginModel.Password == "secretPassword") //HACK
+			if (loginModel.Email == "user@example.com" &&
+				_passwordHasher.VerifyHashedPassword(
+					null, _passwordHasher.HashPassword(null, "secretPassword") , loginModel.Password) == PasswordVerificationResult.Success)  //HACK
 			{
 				user = new User(loginModel.Email);
 			}
