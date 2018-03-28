@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
@@ -11,10 +12,17 @@ namespace AvocoBackend.Data.Models
 		{
 			EmailAddress = emailAdress;
 		}
+		public User()
+		{
+		}
 		public int UserId { get; set; }
+		[Required]
 		public string EmailAddress { get; set; }
-		public string PasswordHash { get; set; } 
+		[Required]
+		public string PasswordHash { get; set; }
+		[Required]
 		public string FirstName { get; set; }
+		[Required]
 		public string LastName { get; set; }
 		public string Region { get; set; }
 		public ICollection<GroupJoinedUser> GroupsJoinedUser { get; set; }
@@ -28,4 +36,5 @@ namespace AvocoBackend.Data.Models
 		//[InverseProperty("User2")]
 		public ICollection<Friend> FriendsInvitedBy { get; set; }
 	}
+
 }

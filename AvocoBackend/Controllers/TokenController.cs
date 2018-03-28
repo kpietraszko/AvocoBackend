@@ -11,24 +11,27 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Repository;
 
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]")]
 	public class TokenController : Controller
 	{
-		private IConfiguration _config; //dziala z DI
-		private IPasswordHasher<User> _passwordHasher;
+		private readonly ApplicationDbContext _context;
+		private readonly IConfiguration _config; //dziala z DI
+		private readonly IPasswordHasher<User> _passwordHasher;
 
-		public TokenController(IConfiguration config, IPasswordHasher<User> passwordHasher)
+		public TokenController(ApplicationDbContext context, IConfiguration config, IPasswordHasher<User> passwordHasher)
 		{
+			_context = context;
 			_config = config;
 			_passwordHasher = passwordHasher;
 		}
 		
 		[AllowAnonymous]
 		[HttpPost]
-		public IActionResult CreateToken([FromBody]LoginModel loginModel) //loginModel przychodzi ok
+		public IActionResult CreateToken([FromForm]LoginModel loginModel) //loginModel przychodzi ok
 		{
 			IActionResult response = Unauthorized();
 			var user = Authenticate(loginModel); 
@@ -43,12 +46,19 @@ namespace AvocoBackend.Api.Controllers
 		{
 			User user = null;
 			//TODO: spr email z bazą, zahashuj haslo i porownac z hashem z bazy
-			if (loginModel.Email == "user@example.com" &&
-				_passwordHasher.VerifyHashedPassword(
-					null, _passwordHasher.HashPassword(null, "secretPassword") , loginModel.Password) == PasswordVerificationResult.Success)  //HACK
+			var emailMatchingUser = _context.Users.FirstOrDefault(u => u.EmailAddress == loginModel.Email);
+			if(emailMatchingUser != null)
 			{
-				user = new User(loginModel.Email);
+				if (_passwordHasher.VerifyHashedPassword(null, emailMatchingUser.PasswordHash, loginModel.Password) == PasswordVerificationResult.Success)
+					user = emailMatchingUser;
 			}
+
+			//if (loginModel.Email == "user@example.com" &&
+			//	_passwordHasher.VerifyHashedPassword(
+			//		null, _passwordHasher.HashPassword(null, "secretPassword") , loginModel.Password) == PasswordVerificationResult.Success)  //HACK
+			//{
+			//	user = new User(loginModel.Email); //HACK
+			//}
 			return user;
 		}
 		string BuildToken(User user)
