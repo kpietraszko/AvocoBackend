@@ -49,7 +49,8 @@ namespace AvocoBackend.Api.Controllers
 			var emailMatchingUser = _context.Users.FirstOrDefault(u => u.EmailAddress == loginModel.Email);
 			if(emailMatchingUser != null)
 			{
-				if (_passwordHasher.VerifyHashedPassword(null, emailMatchingUser.PasswordHash, loginModel.Password) == PasswordVerificationResult.Success)
+				var hashVerificationResult = _passwordHasher.VerifyHashedPassword(null, emailMatchingUser.PasswordHash, loginModel.Password);
+				if (hashVerificationResult == PasswordVerificationResult.Success)
 					user = emailMatchingUser;
 			}
 
