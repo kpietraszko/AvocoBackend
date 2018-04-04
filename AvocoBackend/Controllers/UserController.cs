@@ -38,7 +38,7 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			if(_context.Users.Any(u => u.EmailAddress == userData.EmailAddress))
+			if (_context.Users.Any(u => u.EmailAddress == userData.EmailAddress))
 			{
 				return StatusCode(422, "Email already used");
 
@@ -57,8 +57,13 @@ namespace AvocoBackend.Api.Controllers
 			return CreatedAtAction("Register", null);
 		}
 		[HttpPost]
+		[AllowAnonymous]
 		public IActionResult Login([FromBody]LoginModel loginModel) //zwraca token
 		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 			IActionResult response = Unauthorized();
 			var user = Authenticate(loginModel);
 			if (user != null)
