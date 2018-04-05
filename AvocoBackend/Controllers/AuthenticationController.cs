@@ -17,13 +17,13 @@ using System.IdentityModel.Tokens.Jwt;
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
-	public class UserController : Controller
+	public class AuthenticationController : Controller
 	{
 		private readonly ApplicationDbContext _context;
 		private readonly IConfiguration _config;
 		private readonly IPasswordHasher<User> _passwordHasher;
 
-		public UserController(ApplicationDbContext context, IConfiguration config, IPasswordHasher<User> passwordHasher)
+		public AuthenticationController(ApplicationDbContext context, IConfiguration config, IPasswordHasher<User> passwordHasher)
 		{
 			_context = context;
 			_config = config;
