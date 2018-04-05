@@ -4,16 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 
 namespace AvocoBackend.Api.Controllers
 {
-    [Route("api/[controller]/[action]")]
-	 [Authorize]
-    public class UserController : Controller
-    {
+	[Route("api/[controller]/[action]")]
+	[Authorize]
+	public class UserController : Controller
+	{
 		private readonly ApplicationDbContext _dbContext;
 
 		public UserController(ApplicationDbContext dbContext)
@@ -27,15 +28,29 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			Console.WriteLine("Claims of user posting this Photo request");
-			Console.WriteLine(HttpContext.User.Claims);
-			using (var memoryStream = new MemoryStream())
+			IActionResult response = StatusCode(422);
+			var reqUserIdString = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+			int reqUserId;
+			if (Int32.TryParse(reqUserIdString, out reqUserId))
 			{
-				await file.CopyToAsync(memoryStream);
-				//TODO: dowiedziec się kto wysyła ten request, znalezc tego uzytkownika w bazie i zapisac mu ten obrazek
+
+				using (var memoryStream = new MemoryStream())
+				{
+					if (file?.Length > 0)
+					{
+						await file.CopyToAsync(memoryStream);
+						var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == reqUserId);
+						if (dbUser != null)
+						{
+							dbUser.ProfileImage = memoryStream.ToArray();
+							response = Ok();
+						}
+					}
+				}
+				await _dbContext.SaveChangesAsync();
 			}
 
-			return Ok();
+			return response;
 		}
 		[HttpGet]
 		public async Task<IActionResult> Photo(int userId)
@@ -44,5 +59,5 @@ namespace AvocoBackend.Api.Controllers
 			return null;
 		}
 
-	 }
+	}
 }
