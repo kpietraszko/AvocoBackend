@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -93,7 +94,8 @@ namespace AvocoBackend.Api.Controllers
 				issuer: _config["Jwt:Issuer"],
 				audience: _config["Jwt:Issuer"],
 				expires: DateTime.Now.AddMinutes(_config.GetValue<int>("Jwt:TTL", 30)), //czas z configu, jesli w configu brak to 30min
-				signingCredentials: creds
+				signingCredentials: creds,
+				claims: new Claim[] { new Claim("userId", user.UserId.ToString()) }
 				);
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}
