@@ -12,7 +12,7 @@ using Repository;
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
-	[Authorize]
+	//[Authorize]
 	public class UserController : Controller
 	{
 		private readonly ApplicationDbContext _dbContext;
@@ -52,11 +52,20 @@ namespace AvocoBackend.Api.Controllers
 
 			return response;
 		}
-		[HttpGet]
-		public async Task<IActionResult> Photo(int userId)
+		[HttpGet("{userId}")]
+		public IActionResult Photo(int userId)
 		{
-			await Task.Delay(1);
-			return null;
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			IActionResult response = StatusCode(422);
+			var user = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			if(user?.ProfileImage != null)
+			{
+				response = File(user.ProfileImage, "image/png");
+			}
+			return response;
 		}
 
 	}
