@@ -11,17 +11,29 @@ namespace AvocoBackend.Repository
 	{
 		public static void Seed(ApplicationDbContext context)
 		{
-			Console.WriteLine("Seeding");
 			context.Database.EnsureCreated();
-			if (context.Interests.Any())
+			if (!context.Interests.Any())
 			{
-				return;
+				context.Interests.AddRange(
+					new Interest
+					{
+						InterestName = "Filmy"
+					},
+					new Interest { InterestName = "Zwierzęta" },
+					new Interest { InterestName = "Gotowanie" },
+					new Interest { InterestName = "Fotografia" });
+				context.SaveChanges();
 			}
-			context.Interests.AddRange(new Interest { InterestName = "Filmy" },
-				new Interest { InterestName = "Zwierzęta" },
-				new Interest { InterestName = "Gotowanie" },
-				new Interest { InterestName = "Fotografia" });
-			context.SaveChanges();
+			if (!context.UsersInterests.Any())
+			{
+				var ui = new UserInterest
+				{
+					Interest = context.Interests.First(i => i.InterestId == 1),
+					User = context.Users.First(u => u.UserId == 6)
+				};
+				context.UsersInterests.Add(ui);
+				context.SaveChanges();
+			}
 		}
-	}
+}
 }

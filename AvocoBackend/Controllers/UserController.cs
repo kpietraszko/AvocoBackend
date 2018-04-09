@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
+using AvocoBackend.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
-	[Authorize]
+	//[Authorize]
 	public class UserController : Controller
 	{
 		private readonly ApplicationDbContext _dbContext;
@@ -60,7 +62,7 @@ namespace AvocoBackend.Api.Controllers
 			}
 			IActionResult response = StatusCode(422);
 			var user = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
-			if(user?.ProfileImage != null)
+			if (user?.ProfileImage != null)
 			{
 				response = File(user.ProfileImage, "image/png");
 			}
@@ -88,28 +90,39 @@ namespace AvocoBackend.Api.Controllers
 		[HttpGet("{userId}")]
 		public IActionResult Name(int userId)
 		{
-			if(!ModelState.IsValid)
+			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 			IActionResult response = StatusCode(422);
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
-			if(dbUser != null)
+			if (dbUser != null)
 			{
 				response = Json(new { fullName = $"{dbUser.FirstName} {dbUser.LastName}" });
 			}
 			return response;
 		}
-		//[HttpGet]
-		//public IActionResult SearchInterests(string searchText)
-		//{
-
-		//}
-		//[HttpPost]
-		//public IActionResult AddInterest()
-		//{
-
-		//}
+		[HttpGet("{searchText}")]
+		public IActionResult SearchInterests(string searchText)
+		{
+			if (String.IsNullOrWhiteSpace(searchText))
+				return StatusCode(422);
+			var found =  _dbContext.Interests.Where(i => i.InterestName.Contains(searchText));
+			return Ok(found);
+		}
+		[HttpGet("{userId}")]
+		public IActionResult GetUsersInterests(int userId)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			IActionResult response = StatusCode(422);
+			var usersInterestsTable = _dbContext.UsersInterests;
+			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User).Where(ui => ui.UserId == userId);
+			var interests = userInterests.Select(ui => ui.Interest.InterestName);
+			return Json(interests);
+		}
 
 
 	}
