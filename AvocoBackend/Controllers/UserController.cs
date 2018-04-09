@@ -12,7 +12,7 @@ using Repository;
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
-	//[Authorize]
+	[Authorize]
 	public class UserController : Controller
 	{
 		private readonly ApplicationDbContext _dbContext;
@@ -33,7 +33,6 @@ namespace AvocoBackend.Api.Controllers
 			int reqUserId;
 			if (Int32.TryParse(reqUserIdString, out reqUserId))
 			{
-
 				using (var memoryStream = new MemoryStream())
 				{
 					if (file?.Length > 0)
@@ -67,6 +66,51 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return response;
 		}
+		[HttpPost]
+		public async Task<IActionResult> UserInfo(string firstName, string lastName, string region)
+		{
+			IActionResult response = StatusCode(422);
+			var reqUserIdString = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+			int reqUserId;
+			if (Int32.TryParse(reqUserIdString, out reqUserId))
+			{
+				var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == reqUserId);
+				if (dbUser != null)
+				{
+					dbUser.FirstName = firstName ?? dbUser.FirstName;
+					dbUser.LastName = lastName ?? dbUser.LastName;
+					dbUser.Region = region ?? dbUser.Region;
+					await _dbContext.SaveChangesAsync();
+				}
+			}
+			return response;
+		}
+		[HttpGet("{userId}")]
+		public IActionResult Name(int userId)
+		{
+			if(!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			IActionResult response = StatusCode(422);
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			if(dbUser != null)
+			{
+				response = Json(new { fullName = $"{dbUser.FirstName} {dbUser.LastName}" });
+			}
+			return response;
+		}
+		//[HttpGet]
+		//public IActionResult SearchInterests(string searchText)
+		//{
+
+		//}
+		//[HttpPost]
+		//public IActionResult AddInterest()
+		//{
+
+		//}
+
 
 	}
 }
