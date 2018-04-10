@@ -138,6 +138,19 @@ namespace AvocoBackend.Api.Controllers
 				//f => f.User1Id == userId ? $"{f.User2.FirstName} {f.User2.LastName}" : $"{f.User1.FirstName} {f.User1.LastName}");
 			return Json(friendsData);
 		}
-
+		[HttpPut("{user1Id}/{user2Id}")]
+		public async Task<IActionResult> AddFriend(int user1Id, int user2Id)
+		{
+			IActionResult response = StatusCode(422);
+			var alreadyExists = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == user1Id && f.User2Id == user2Id) ||
+			(f.User2Id == user1Id && f.User1Id == user2Id)) != null;
+			if (!alreadyExists)
+			{
+				_dbContext.Friends.Add(new Friend { User1Id = user1Id, User2Id = user2Id });
+				await _dbContext.SaveChangesAsync();
+				response = Ok();
+			}
+			return response;
+		}
 	}
 }
