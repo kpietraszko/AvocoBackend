@@ -118,10 +118,21 @@ namespace AvocoBackend.Api.Controllers
 				return BadRequest(ModelState);
 			}
 			IActionResult response = StatusCode(422);
-			var usersInterestsTable = _dbContext.UsersInterests;
 			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User).Where(ui => ui.UserId == userId);
 			var interests = userInterests.Select(ui => ui.Interest.InterestName);
 			return Json(interests);
+		}
+		[HttpGet("{userId}")]
+		public IActionResult Friends(int userId)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			IActionResult response = StatusCode(422);
+			var friends = _dbContext.Friends.Include(f => f.User1).Include(f => f.User2).Where(f => f.User1Id == userId || f.User2Id == userId);
+			var friendsFullNames = friends.Select(f => f.User1Id == userId ? $"{f.User2.FirstName} {f.User2.LastName}" : $"{f.User1.FirstName} {f.User1.LastName}");
+			return Json(friendsFullNames);
 		}
 
 

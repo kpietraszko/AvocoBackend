@@ -34,6 +34,12 @@ namespace AvocoBackend.Repository
 				context.UsersInterests.Add(ui);
 				context.SaveChanges();
 			}
+			if (!context.Friends.Any())
+			{
+				context.Friends.Add(new Friend { User1Id = 6, User2Id = 1 });
+				context.Friends.Add(new Friend { User1Id = 6, User2Id = 8 });
+			}
+			context.SaveChanges();
 		}
 }
 }
