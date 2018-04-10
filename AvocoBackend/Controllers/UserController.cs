@@ -131,10 +131,13 @@ namespace AvocoBackend.Api.Controllers
 			}
 			IActionResult response = StatusCode(422);
 			var friends = _dbContext.Friends.Include(f => f.User1).Include(f => f.User2).Where(f => f.User1Id == userId || f.User2Id == userId);
-			var friendsFullNames = friends.Select(f => f.User1Id == userId ? $"{f.User2.FirstName} {f.User2.LastName}" : $"{f.User1.FirstName} {f.User1.LastName}");
-			return Json(friendsFullNames);
+			var friendsData = friends.Select(f =>
+				f.User1Id == userId ? (new { userId = f.User2Id, fullName = $"{f.User2.FirstName} {f.User2.LastName}"}) :
+				(new { userId = f.User1Id, fullName = $"{f.User1.FirstName} {f.User1.LastName}"})
+			);
+				//f => f.User1Id == userId ? $"{f.User2.FirstName} {f.User2.LastName}" : $"{f.User1.FirstName} {f.User1.LastName}");
+			return Json(friendsData);
 		}
-
 
 	}
 }
