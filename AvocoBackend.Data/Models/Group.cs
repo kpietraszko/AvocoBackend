@@ -9,6 +9,7 @@ namespace AvocoBackend.Data.Models
 		public int GroupId { get; set; }
 		public string GroupName { get; set; }
 		public string GroupDescription { get; set; }
+		public byte[] GroupPicture { get; set; }
 		public ICollection<GroupJoinedUser> GroupJoinedUsers { get; set; }
 		public ICollection<Event> Events { get; set; }
 		public ICollection<GroupInterest> GroupInterests { get; set; }

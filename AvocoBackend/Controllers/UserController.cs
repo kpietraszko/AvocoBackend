@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
-	//[Authorize]
+	[Authorize]
 	public class UserController : Controller
 	{
 		private readonly ApplicationDbContext _dbContext;
@@ -74,7 +74,7 @@ namespace AvocoBackend.Api.Controllers
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
-				return response;
+				return Unauthorized();
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{
@@ -87,7 +87,7 @@ namespace AvocoBackend.Api.Controllers
 			return response;
 		}
 		[HttpGet("/api/[controller]/{userId}/[action]")]
-		public IActionResult Name(int userId)
+		public IActionResult UserInfo(int userId)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -97,7 +97,10 @@ namespace AvocoBackend.Api.Controllers
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{
-				response = Json(new { fullName = $"{dbUser.FirstName} {dbUser.LastName}" });
+				response = Json(new {
+					fullName = $"{dbUser.FirstName} {dbUser.LastName}",
+					region = dbUser.Region
+				});
 			}
 			return response;
 		}
@@ -130,7 +133,7 @@ namespace AvocoBackend.Api.Controllers
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
-				return response;
+				return Unauthorized();
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{
@@ -177,20 +180,23 @@ namespace AvocoBackend.Api.Controllers
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
-				return response;
-			var friends = _dbContext.Friends.Include(f => f.User1).Include(f => f.User2).Where(f => f.User1Id == userId || f.User2Id == userId);
-			var friendsData = friends.Select(f =>
-				f.User1Id == userId ? (new { userId = f.User2Id, fullName = $"{f.User2.FirstName} {f.User2.LastName}"}) :
-				(new { userId = f.User1Id, fullName = $"{f.User1.FirstName} {f.User1.LastName}"})
+				return Unauthorized();
+			var friends = _dbContext.Friends.Where(f => f.User1Id == userId || f.User2Id == userId);
+			var friendsData = friends.Include(f => f.User1).Include(f => f.User2)
+				.Select(f =>
+					f.User1Id == userId ? (new { userId = f.User2Id, fullName = $"{f.User2.FirstName} {f.User2.LastName}"}) :
+					(new { userId = f.User1Id, fullName = $"{f.User1.FirstName} {f.User1.LastName}"})
 			);
 			return Json(friendsData);
 		}
-		[HttpPut("{user1Id}/{user2Id}")]
+		[HttpPut("/api/[controller]/{user2Id}/[action]")]
 		public async Task<IActionResult> AddFriend(int user2Id)
 		{
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
+				return Unauthorized();
+			if (userId == user2Id)
 				return response;
 			var alreadyExists = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
 			(f.User2Id == userId && f.User1Id == user2Id)) != null;
@@ -201,6 +207,29 @@ namespace AvocoBackend.Api.Controllers
 					_dbContext.Friends.Add(new Friend { User1Id = (int)userId, User2Id = user2Id });
 				await _dbContext.SaveChangesAsync();
 				response = Ok();
+			}
+			return response;
+		}
+		[HttpPut("/api/[controller]/{user2Id}/[action]")]
+		public async Task<IActionResult> Unfriend(int user2Id)
+		{
+			IActionResult response = StatusCode(422);
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return Unauthorized();
+			if (user2Id == userId)
+				return response;
+			var user2exists = _dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null;
+			if(user2exists)
+			{
+				var friendship = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
+					(f.User1Id == user2Id && f.User2Id == userId));
+				if (friendship != null)
+				{
+					_dbContext.Friends.Remove(friendship);
+					await _dbContext.SaveChangesAsync();
+					response = Ok();
+				}
 			}
 			return response;
 		}
