@@ -53,7 +53,7 @@ namespace AvocoBackend.Api.Controllers
 
 			return response;
 		}
-		[HttpGet("{userId}")]
+		[HttpGet("/api/[controller]/{userId}/[action]")]
 		public IActionResult Photo(int userId)
 		{
 			if (!ModelState.IsValid)
@@ -72,22 +72,21 @@ namespace AvocoBackend.Api.Controllers
 		public async Task<IActionResult> UserInfo(string firstName, string lastName, string region)
 		{
 			IActionResult response = StatusCode(422);
-			var reqUserIdString = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-			int reqUserId;
-			if (Int32.TryParse(reqUserIdString, out reqUserId))
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return response;
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			if (dbUser != null)
 			{
-				var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == reqUserId);
-				if (dbUser != null)
-				{
-					dbUser.FirstName = firstName ?? dbUser.FirstName;
-					dbUser.LastName = lastName ?? dbUser.LastName;
-					dbUser.Region = region ?? dbUser.Region;
-					await _dbContext.SaveChangesAsync();
-				}
+				dbUser.FirstName = firstName ?? dbUser.FirstName;
+				dbUser.LastName = lastName ?? dbUser.LastName;
+				dbUser.Region = region ?? dbUser.Region;
+				await _dbContext.SaveChangesAsync();
 			}
+
 			return response;
 		}
-		[HttpGet("{userId}")]
+		[HttpGet("/api/[controller]/{userId}/[action]")]
 		public IActionResult Name(int userId)
 		{
 			if (!ModelState.IsValid)
@@ -110,8 +109,8 @@ namespace AvocoBackend.Api.Controllers
 			var found =  _dbContext.Interests.Where(i => i.InterestName.Contains(searchText));
 			return Ok(found);
 		}
-		[HttpGet("{userId}")]
-		public IActionResult GetUsersInterests(int userId)
+		[HttpGet("/api/[controller]/{userId}/[action]")]
+		public IActionResult Interests(int userId)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -122,35 +121,98 @@ namespace AvocoBackend.Api.Controllers
 			var interests = userInterests.Select(ui => ui.Interest.InterestName);
 			return Json(interests);
 		}
-		[HttpGet("{userId}")]
-		public IActionResult Friends(int userId)
+		[HttpPost("{interestId:int?}")]
+		[HttpPost("{interestName?}")]
+		public async Task<IActionResult> AddInterest(int? interestId = null, string interestName = null)
+		{
+			if (interestId == null && interestName == null)
+				return BadRequest();
+			IActionResult response = StatusCode(422);
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return response;
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			if (dbUser != null)
+			{
+				if (interestId != null) //dodaj istniejace zainteresowanie uzytkownikowi
+				{
+					if (_dbContext.Interests.FirstOrDefault(i => i.InterestId == interestId) != null && //jesli zainteresowanie istnieje 
+						_dbContext.UsersInterests.FirstOrDefault(ui => ui.UserId == userId && ui.InterestId == interestId) == null) //i ten uzytkownik go nie ma
+						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = (int)interestId });
+					response = Ok();
+				}
+				else //stworz zainteresowanie
+				{
+					if (_dbContext.Interests.FirstOrDefault(i => i.InterestName == interestName) == null) //jesli zainteresowanie o tej nazwie nie istnieje
+					{
+						var newInterest = _dbContext.Interests.Add(new Interest { InterestName = interestName });
+						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = newInterest.Entity.InterestId });
+						response = Ok();
+					}
+
+				}
+				await _dbContext.SaveChangesAsync();
+			}
+			return response;
+		}
+		[HttpGet("/api/[controller]/{userId}/[action]")]
+		public IActionResult Groups(int userId)
+		{
+			IActionResult response = StatusCode(422);
+			if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null)
+			{
+				var groups = _dbContext.GroupsJoinedUsers.Where(g => g.UserId == userId);
+				var groupsData = groups.Include(g => g.Group).Select(g => new { groupId = g.GroupId, groupName = g.Group.GroupName });
+				response = Json(groupsData);
+			}
+			return response;
+		}
+		[HttpGet()]
+		public IActionResult Friends()
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 			IActionResult response = StatusCode(422);
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return response;
 			var friends = _dbContext.Friends.Include(f => f.User1).Include(f => f.User2).Where(f => f.User1Id == userId || f.User2Id == userId);
 			var friendsData = friends.Select(f =>
 				f.User1Id == userId ? (new { userId = f.User2Id, fullName = $"{f.User2.FirstName} {f.User2.LastName}"}) :
 				(new { userId = f.User1Id, fullName = $"{f.User1.FirstName} {f.User1.LastName}"})
 			);
-				//f => f.User1Id == userId ? $"{f.User2.FirstName} {f.User2.LastName}" : $"{f.User1.FirstName} {f.User1.LastName}");
 			return Json(friendsData);
 		}
 		[HttpPut("{user1Id}/{user2Id}")]
-		public async Task<IActionResult> AddFriend(int user1Id, int user2Id)
+		public async Task<IActionResult> AddFriend(int user2Id)
 		{
 			IActionResult response = StatusCode(422);
-			var alreadyExists = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == user1Id && f.User2Id == user2Id) ||
-			(f.User2Id == user1Id && f.User1Id == user2Id)) != null;
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return response;
+			var alreadyExists = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
+			(f.User2Id == userId && f.User1Id == user2Id)) != null;
 			if (!alreadyExists)
 			{
-				_dbContext.Friends.Add(new Friend { User1Id = user1Id, User2Id = user2Id });
+				if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null &&
+					_dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null)
+					_dbContext.Friends.Add(new Friend { User1Id = (int)userId, User2Id = user2Id });
 				await _dbContext.SaveChangesAsync();
 				response = Ok();
 			}
 			return response;
+		}
+		private int? GetUserIdFromClaims(HttpContext context)
+		{
+			var reqUserIdString = context.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+			int reqUserId;
+			if (Int32.TryParse(reqUserIdString, out reqUserId))
+			{
+				return reqUserId;
+			}
+			return null;
 		}
 	}
 }

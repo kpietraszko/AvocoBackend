@@ -24,6 +24,13 @@ namespace AvocoBackend.Repository
 					new Interest { InterestName = "Fotografia" });
 				context.SaveChanges();
 			}
+			if(!context.Groups.Any())
+			{
+				context.Groups.AddRange(
+					new Group { GroupName = "Militaria"},
+					new Group { GroupName = "Gotowanie w lesie"});
+				context.SaveChanges();
+			}
 			if (!context.UsersInterests.Any())
 			{
 				var ui = new UserInterest
@@ -40,6 +47,12 @@ namespace AvocoBackend.Repository
 				context.Friends.Add(new Friend { User1Id = 6, User2Id = 8 });
 			}
 			context.SaveChanges();
+			if(!context.GroupsJoinedUsers.Any())
+			{
+				context.GroupsJoinedUsers.AddRange(new GroupJoinedUser { UserId = 6, GroupId = 1 },
+					new GroupJoinedUser { UserId = 6, GroupId = 2});
+				context.SaveChanges();
+			}
 		}
 }
 }
