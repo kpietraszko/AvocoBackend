@@ -11,9 +11,10 @@ using System;
 namespace AvocoBackend.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180412091241_zdjGrupy")]
+    partial class zdjGrupy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,7 +226,7 @@ namespace AvocoBackend.Repository.Migrations
 
                     b.Property<byte[]>("ProfileImage");
 
-                    b.Property<int?>("Region");
+                    b.Property<string>("Region");
 
                     b.HasKey("UserId");
 

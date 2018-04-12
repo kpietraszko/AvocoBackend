@@ -23,13 +23,9 @@ namespace AvocoBackend.Api.Controllers
 		{
 			_dbContext = dbContext;
 		}
-		[HttpPost]
+		[HttpPut]
 		public async Task<IActionResult> Photo(IFormFile file)
 		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
 			IActionResult response = StatusCode(422);
 			var reqUserIdString = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
 			int reqUserId;
@@ -68,8 +64,8 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return response;
 		}
-		[HttpPost]
-		public async Task<IActionResult> UserInfo(string firstName, string lastName, string region)
+		[HttpPut]
+		public async Task<IActionResult> UserInfo(string firstName, string lastName, int? region)
 		{
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
@@ -82,6 +78,7 @@ namespace AvocoBackend.Api.Controllers
 				dbUser.LastName = lastName ?? dbUser.LastName;
 				dbUser.Region = region ?? dbUser.Region;
 				await _dbContext.SaveChangesAsync();
+				response = Ok();
 			}
 
 			return response;
@@ -97,7 +94,8 @@ namespace AvocoBackend.Api.Controllers
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{
-				response = Json(new {
+				response = Json(new
+				{
 					fullName = $"{dbUser.FirstName} {dbUser.LastName}",
 					region = dbUser.Region
 				});
@@ -121,7 +119,8 @@ namespace AvocoBackend.Api.Controllers
 			}
 			IActionResult response = StatusCode(422);
 			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User).Where(ui => ui.UserId == userId);
-			var interests = userInterests.Select(ui => ui.Interest.InterestName);
+			var interests = userInterests.Include(ui => ui.Interest)
+				.Select(ui => new { interestId = ui.InterestId, interestName = ui.Interest.InterestName} );
 			return Json(interests);
 		}
 		[HttpPost("{interestId:int?}")]
@@ -165,9 +164,24 @@ namespace AvocoBackend.Api.Controllers
 			if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null)
 			{
 				var groups = _dbContext.GroupsJoinedUsers.Where(g => g.UserId == userId);
-				var groupsData = groups.Include(g => g.Group).Select(g => new { groupId = g.GroupId, groupName = g.Group.GroupName });
+				var groupsData = groups.Include(g => g.Group)
+					.Select(g => new
+					{
+						groupId = g.GroupId,
+						groupName = g.Group.GroupName
+					});
 				response = Json(groupsData);
 			}
+			return response;
+		}
+		[HttpGet("/api/[controller]/{groupId}/[action]")] //TODO: przeniesc do kontrolera grupy
+		public IActionResult GroupPicture(int groupId)
+		{
+			IActionResult response = StatusCode(422);
+			var groupDb = _dbContext.Groups.FirstOrDefault(g => g.GroupId == groupId);
+			if (groupDb != null)
+				if(groupDb.GroupPicture != null)
+					response = File(groupDb.GroupPicture, "image/png");
 			return response;
 		}
 		[HttpGet()]
@@ -220,7 +234,7 @@ namespace AvocoBackend.Api.Controllers
 			if (user2Id == userId)
 				return response;
 			var user2exists = _dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null;
-			if(user2exists)
+			if (user2exists)
 			{
 				var friendship = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
 					(f.User1Id == user2Id && f.User2Id == userId));
@@ -236,8 +250,7 @@ namespace AvocoBackend.Api.Controllers
 		private int? GetUserIdFromClaims(HttpContext context)
 		{
 			var reqUserIdString = context.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-			int reqUserId;
-			if (Int32.TryParse(reqUserIdString, out reqUserId))
+			if (Int32.TryParse(reqUserIdString, out int reqUserId))
 			{
 				return reqUserId;
 			}

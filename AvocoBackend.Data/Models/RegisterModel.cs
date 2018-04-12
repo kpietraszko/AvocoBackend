@@ -11,7 +11,7 @@ namespace AvocoBackend.Data.Models
 		public string FirstName { get; set; }
 		[Required]
 		public string LastName { get; set; }
-		public string Region { get; set; }
+		public int? Region { get; set; }
 		[Required]
 		[EmailAddress]
 		public string EmailAddress { get; set; }

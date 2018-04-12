@@ -24,7 +24,7 @@ namespace AvocoBackend.Data.Models
 		public string FirstName { get; set; }
 		[Required]
 		public string LastName { get; set; }
-		public string Region { get; set; }
+		public int? Region { get; set; }
 		public byte[] ProfileImage { get; set; }
 		public ICollection<GroupJoinedUser> GroupsJoinedUser { get; set; }
 		public ICollection<EventJoinedUser> EventsJoinedUser { get; set; }
