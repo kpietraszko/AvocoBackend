@@ -8,8 +8,10 @@ namespace AvocoBackend.Data.Models
 	public class RegisterModel
 	{
 		[Required]
+		[RegularExpression("[a-zA-Z]+")]
 		public string FirstName { get; set; }
 		[Required]
+		[RegularExpression("[a-zA-Z]+")]
 		public string LastName { get; set; }
 		public int? Region { get; set; }
 		[Required]
