@@ -33,26 +33,26 @@ namespace AvocoBackend.Api.Controllers
 
 		[HttpPost]
 		[AllowAnonymous]
-		public async Task<IActionResult> Register([FromBody] RegisterModel userData) //w js body requestu powinno byc new FormData(form), gdzie form to <form/> htmlowy
+		public async Task<IActionResult> Register([FromBody] RegisterModel userData)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
-			if (_context.Users.Any(u => u.EmailAddress == userData.EmailAddress))
+			if (_context.Users.Any(u => u.EmailAddress == userData.EmailAddress)) //service
 			{
 				return StatusCode(422, "Email already used");
 
 			}
-			var hashedPassword = _passwordHasher.HashPassword(null, userData.Password);
-			var newUser = new User{
+			var hashedPassword = _passwordHasher.HashPassword(null, userData.Password); //service
+			var newUser = new User{ //service
 				EmailAddress = userData.EmailAddress,
 				PasswordHash = hashedPassword,
 				FirstName = userData.FirstName,
 				LastName = userData.LastName,
 				Region = userData.Region
 			};
-			_context.Users.Add(newUser);
+			_context.Users.Add(newUser); //w repo
 			await _context.SaveChangesAsync();
 
 			return CreatedAtAction("Register", null);
@@ -65,14 +65,15 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			IActionResult response = Unauthorized();
+			
 			var user = Authenticate(loginModel);
-			if (user != null)
-			{
-				var tokenString = BuildToken(user);
-				response = Ok(new { token = tokenString });
-			}
-			return response;
+            if (user != null)
+            {
+                var tokenString = BuildToken(user);
+                return Ok(new { token = tokenString });
+            }
+            return Unauthorized();
+
 		}
 		User Authenticate(LoginModel loginModel)
 		{
@@ -95,7 +96,7 @@ namespace AvocoBackend.Api.Controllers
 				audience: _config["Jwt:Issuer"],
 				expires: DateTime.Now.AddMinutes(_config.GetValue<int>("Jwt:TTL", 30)), //czas z configu, jesli w configu brak to 30min
 				signingCredentials: creds,
-				claims: new Claim[] { new Claim("userId", user.UserId.ToString()) }
+				claims: new Claim[] { new Claim(ClaimTypes.si, user.UserId.ToString()) }
 				);
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}

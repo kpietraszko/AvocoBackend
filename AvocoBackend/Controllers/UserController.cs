@@ -17,7 +17,7 @@ namespace AvocoBackend.Api.Controllers
 	[Authorize]
 	public class UserController : Controller
 	{
-		private readonly ApplicationDbContext _dbContext;
+		private readonly ApplicationDbContext _dbContext; //repo zamiast
 
 		public UserController(ApplicationDbContext dbContext)
 		{
@@ -40,7 +40,7 @@ namespace AvocoBackend.Api.Controllers
 						if (dbUser != null)
 						{
 							dbUser.ProfileImage = memoryStream.ToArray();
-							response = Ok();
+							response = Ok(); //od razu zwracac
 						}
 					}
 				}
@@ -73,7 +73,7 @@ namespace AvocoBackend.Api.Controllers
 				return Unauthorized();
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
-			{
+			{ //automapper
 				dbUser.FirstName = firstName ?? dbUser.FirstName;
 				dbUser.LastName = lastName ?? dbUser.LastName;
 				dbUser.Region = region ?? dbUser.Region;
@@ -118,7 +118,8 @@ namespace AvocoBackend.Api.Controllers
 				return BadRequest(ModelState);
 			}
 			IActionResult response = StatusCode(422);
-			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User).Where(ui => ui.UserId == userId);
+			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User)
+                .Where(ui => ui.UserId == userId);
 			var interests = userInterests.Include(ui => ui.Interest)
 				.Select(ui => new { interestId = ui.InterestId, interestName = ui.Interest.InterestName} );
 			return Json(interests);
@@ -127,8 +128,10 @@ namespace AvocoBackend.Api.Controllers
 		[HttpPost("{interestName?}")]
 		public async Task<IActionResult> AddInterest(int? interestId = null, string interestName = null)
 		{
-			if (interestId == null && interestName == null)
-				return BadRequest();
+            if (interestId == null && interestName == null)
+            {
+                return BadRequest();
+            }
 			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
@@ -222,7 +225,7 @@ namespace AvocoBackend.Api.Controllers
 				await _dbContext.SaveChangesAsync();
 				response = Ok();
 			}
-			return response;
+			return response; //wiadomosc o bledzie dolaczyc
 		}
 		[HttpPut("/api/[controller]/{user2Id}/[action]")]
 		public async Task<IActionResult> Unfriend(int user2Id)
@@ -236,7 +239,7 @@ namespace AvocoBackend.Api.Controllers
 			var user2exists = _dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null;
 			if (user2exists)
 			{
-				var friendship = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
+				var friendship = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) || //tylko czy Friend istnieje, nie user
 					(f.User1Id == user2Id && f.User2Id == userId));
 				if (friendship != null)
 				{

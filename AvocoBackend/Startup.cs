@@ -57,7 +57,7 @@ namespace AvocoBackend
 			{
 				app.UseDeveloperExceptionPage();
 			}
-			app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+			app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());//testowo
 
 			app.UseAuthentication();
 
