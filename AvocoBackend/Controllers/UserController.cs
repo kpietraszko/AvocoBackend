@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Repository;
 using AvocoBackend.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using AutoMapper;
 
 namespace AvocoBackend.Api.Controllers
 {
@@ -18,34 +20,35 @@ namespace AvocoBackend.Api.Controllers
 	public class UserController : Controller
 	{
 		private readonly ApplicationDbContext _dbContext; //repo zamiast
+		private readonly IMapper _mapper;
 
-		public UserController(ApplicationDbContext dbContext)
+		public UserController(ApplicationDbContext dbContext, IMapper mapper)
 		{
 			_dbContext = dbContext;
+			_mapper = mapper;
 		}
 		[HttpPut]
 		public async Task<IActionResult> Photo(IFormFile file)
 		{
 			IActionResult response = StatusCode(422);
-			var reqUserIdString = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-			int reqUserId;
-			if (Int32.TryParse(reqUserIdString, out reqUserId))
+			var userId = GetUserIdFromClaims(HttpContext);
+			if (userId == null)
+				return Unauthorized();
+
+			using (var memoryStream = new MemoryStream())
 			{
-				using (var memoryStream = new MemoryStream())
+				if (file?.Length > 0)
 				{
-					if (file?.Length > 0)
+					await file.CopyToAsync(memoryStream);
+					var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+					if (dbUser != null)
 					{
-						await file.CopyToAsync(memoryStream);
-						var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == reqUserId);
-						if (dbUser != null)
-						{
-							dbUser.ProfileImage = memoryStream.ToArray();
-							response = Ok(); //od razu zwracac
-						}
+						dbUser.ProfileImage = memoryStream.ToArray();
+						response = Ok(); //od razu zwracac
 					}
 				}
-				await _dbContext.SaveChangesAsync();
 			}
+			await _dbContext.SaveChangesAsync();
 
 			return response;
 		}
@@ -65,23 +68,23 @@ namespace AvocoBackend.Api.Controllers
 			return response;
 		}
 		[HttpPut]
-		public async Task<IActionResult> UserInfo(string firstName, string lastName, int? region)
+		public async Task<IActionResult> UserInfo(UserInfo userInfo) //string firstName, string lastName, int? region) //to chyba powinien być model
 		{
-			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{ //automapper
-				dbUser.FirstName = firstName ?? dbUser.FirstName;
-				dbUser.LastName = lastName ?? dbUser.LastName;
-				dbUser.Region = region ?? dbUser.Region;
+				_mapper.Map<User>(userInfo);
+				//dbUser.FirstName = firstName ?? dbUser.FirstName;
+				//dbUser.LastName = lastName ?? dbUser.LastName;
+				//dbUser.Region = region ?? dbUser.Region;
 				await _dbContext.SaveChangesAsync();
-				response = Ok();
+				return Ok();
 			}
 
-			return response;
+			return StatusCode(422);
 		}
 		[HttpGet("/api/[controller]/{userId}/[action]")]
 		public IActionResult UserInfo(int userId)
@@ -90,17 +93,13 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			IActionResult response = StatusCode(422);
 			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
 			if (dbUser != null)
 			{
-				response = Json(new
-				{
-					fullName = $"{dbUser.FirstName} {dbUser.LastName}",
-					region = dbUser.Region
-				});
+				var userInfo = _mapper.Map<UserInfo>(dbUser);
+				return Ok(userInfo);
 			}
-			return response;
+			return StatusCode(422);
 		}
 		[HttpGet("{searchText}")]
 		public IActionResult SearchInterests(string searchText)
@@ -117,22 +116,22 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			IActionResult response = StatusCode(422);
+			if(_dbContext.Users.FirstOrDefault(u => u.UserId == userId) == null)
+				return StatusCode(422, "User doesn't exist");
 			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User)
-                .Where(ui => ui.UserId == userId);
+					 .Where(ui => ui.UserId == userId);
 			var interests = userInterests.Include(ui => ui.Interest)
 				.Select(ui => new { interestId = ui.InterestId, interestName = ui.Interest.InterestName} );
-			return Json(interests);
+			return Ok(interests);
 		}
 		[HttpPost("{interestId:int?}")]
 		[HttpPost("{interestName?}")]
 		public async Task<IActionResult> AddInterest(int? interestId = null, string interestName = null)
 		{
-            if (interestId == null && interestName == null)
-            {
-                return BadRequest();
-            }
-			IActionResult response = StatusCode(422);
+			if (interestId == null && interestName == null)
+			{
+				return BadRequest();
+			}
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
@@ -144,7 +143,6 @@ namespace AvocoBackend.Api.Controllers
 					if (_dbContext.Interests.FirstOrDefault(i => i.InterestId == interestId) != null && //jesli zainteresowanie istnieje 
 						_dbContext.UsersInterests.FirstOrDefault(ui => ui.UserId == userId && ui.InterestId == interestId) == null) //i ten uzytkownik go nie ma
 						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = (int)interestId });
-					response = Ok();
 				}
 				else //stworz zainteresowanie
 				{
@@ -152,18 +150,17 @@ namespace AvocoBackend.Api.Controllers
 					{
 						var newInterest = _dbContext.Interests.Add(new Interest { InterestName = interestName });
 						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = newInterest.Entity.InterestId });
-						response = Ok();
 					}
 
 				}
 				await _dbContext.SaveChangesAsync();
+				return Ok();
 			}
-			return response;
+			return StatusCode(422, "User doesn't exist");
 		}
 		[HttpGet("/api/[controller]/{userId}/[action]")]
 		public IActionResult Groups(int userId)
 		{
-			IActionResult response = StatusCode(422);
 			if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null)
 			{
 				var groups = _dbContext.GroupsJoinedUsers.Where(g => g.UserId == userId);
@@ -173,19 +170,18 @@ namespace AvocoBackend.Api.Controllers
 						groupId = g.GroupId,
 						groupName = g.Group.GroupName
 					});
-				response = Json(groupsData);
+				return Ok(groupsData);
 			}
-			return response;
+			return StatusCode(422, "User doesn't exist");
 		}
 		[HttpGet("/api/[controller]/{groupId}/[action]")] //TODO: przeniesc do kontrolera grupy
 		public IActionResult GroupPicture(int groupId)
 		{
-			IActionResult response = StatusCode(422);
 			var groupDb = _dbContext.Groups.FirstOrDefault(g => g.GroupId == groupId);
 			if (groupDb != null)
-				if(groupDb.GroupPicture != null)
-					response = File(groupDb.GroupPicture, "image/png");
-			return response;
+				if (groupDb.GroupPicture != null)
+					return File(groupDb.GroupPicture, "image/png");
+			return StatusCode(422, "User doesn't exist");
 		}
 		[HttpGet()]
 		public IActionResult Friends()
@@ -204,17 +200,16 @@ namespace AvocoBackend.Api.Controllers
 					f.User1Id == userId ? (new { userId = f.User2Id, fullName = $"{f.User2.FirstName} {f.User2.LastName}"}) :
 					(new { userId = f.User1Id, fullName = $"{f.User1.FirstName} {f.User1.LastName}"})
 			);
-			return Json(friendsData);
+			return Ok(friendsData);
 		}
 		[HttpPut("/api/[controller]/{user2Id}/[action]")]
 		public async Task<IActionResult> AddFriend(int user2Id)
 		{
-			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
 			if (userId == user2Id)
-				return response;
+				return StatusCode(422, "User1 == User2");
 			var alreadyExists = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) ||
 			(f.User2Id == userId && f.User1Id == user2Id)) != null;
 			if (!alreadyExists)
@@ -223,19 +218,18 @@ namespace AvocoBackend.Api.Controllers
 					_dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null)
 					_dbContext.Friends.Add(new Friend { User1Id = (int)userId, User2Id = user2Id });
 				await _dbContext.SaveChangesAsync();
-				response = Ok();
+				return Ok();
 			}
-			return response; //wiadomosc o bledzie dolaczyc
+			return StatusCode(422, "Friendship already exists");
 		}
 		[HttpPut("/api/[controller]/{user2Id}/[action]")]
 		public async Task<IActionResult> Unfriend(int user2Id)
 		{
-			IActionResult response = StatusCode(422);
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
 			if (user2Id == userId)
-				return response;
+				return StatusCode(422, "User1 == User2");
 			var user2exists = _dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null;
 			if (user2exists)
 			{
@@ -245,14 +239,14 @@ namespace AvocoBackend.Api.Controllers
 				{
 					_dbContext.Friends.Remove(friendship);
 					await _dbContext.SaveChangesAsync();
-					response = Ok();
+					return Ok();
 				}
 			}
-			return response;
+			return StatusCode(422, "User2 doesn't exist");
 		}
 		private int? GetUserIdFromClaims(HttpContext context)
 		{
-			var reqUserIdString = context.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+			var reqUserIdString = context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value;
 			if (Int32.TryParse(reqUserIdString, out int reqUserId))
 			{
 				return reqUserId;

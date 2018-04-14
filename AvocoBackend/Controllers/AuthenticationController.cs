@@ -96,7 +96,7 @@ namespace AvocoBackend.Api.Controllers
 				audience: _config["Jwt:Issuer"],
 				expires: DateTime.Now.AddMinutes(_config.GetValue<int>("Jwt:TTL", 30)), //czas z configu, jesli w configu brak to 30min
 				signingCredentials: creds,
-				claims: new Claim[] { new Claim(ClaimTypes.si, user.UserId.ToString()) }
+				claims: new Claim[] { new Claim(ClaimTypes.Sid, user.UserId.ToString()) }
 				);
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}
