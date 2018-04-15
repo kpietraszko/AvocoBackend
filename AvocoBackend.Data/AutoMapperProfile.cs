@@ -24,6 +24,10 @@ namespace AvocoBackend.Api
 				.ForMember(u => u.Region, opts => opts.UseDestinationValue()); //troche bez sensu
 
 			CreateMap<RegisterDTO, User>();
+
+			CreateMap<Group, GroupDTO>();
+
+			CreateMap<Interest, InterestDTO>();
 		}
 	}
 

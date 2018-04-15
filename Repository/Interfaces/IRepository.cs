@@ -12,8 +12,10 @@ namespace AvocoBackend.Repository.Interfaces
 		IEnumerable<T> GetAllBy(Expression<Func<T, bool>> getBy, params Expression<Func<T, object>>[] includes);
 		T GetBy(Expression<Func<T, bool>> getBy, params Expression<Func<T, object>>[] includes);
 		bool Exists(Expression<Func<T, bool>> expression);
-		int Insert(T entity);
+		void Insert(T entity);
 		void Update(T entity);
 		void Delete(Expression<Func<T, bool>> expression);
+		void Delete(T entity);
+		void SaveChanges();
     }
 }

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace AvocoBackend.Repository
 {
-	public class Repository<T> : IRepository<T> where T:BaseModel
+	public class Repository<T> : IRepository<T> where T:class//where T:BaseModel
 	{
 		private readonly ApplicationDbContext _context;
 		private DbSet<T> _dbSet;
@@ -57,7 +57,7 @@ namespace AvocoBackend.Repository
 			return result;
 		}
 
-		public int Insert(T entity)
+		public void Insert(T entity)
 		{
 			if (entity == null)
 			{
@@ -65,7 +65,6 @@ namespace AvocoBackend.Repository
 			}
 			_dbSet.Add(entity);
 			_context.SaveChanges();
-			return entity.Id;
 		}
 
 		public void Update(T entity)
@@ -86,6 +85,19 @@ namespace AvocoBackend.Repository
 				throw new NullReferenceException();
 			}
 			_dbSet.Remove(entity);
+			_context.SaveChanges();
+		}
+		public void Delete(T entity)
+		{
+			if (entity == null)
+			{
+				throw new NullReferenceException();
+			}
+			_dbSet.Remove(entity);
+			_context.SaveChanges();
+		}
+		public void SaveChanges()
+		{
 			_context.SaveChanges();
 		}
 	}

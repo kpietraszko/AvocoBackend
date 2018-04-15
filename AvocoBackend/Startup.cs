@@ -38,6 +38,7 @@ namespace AvocoBackend
 			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 			services.AddTransient(typeof(IAuthService), typeof(AuthService));
 			services.AddTransient(typeof(IUserService), typeof(UserService));
+			services.AddTransient(typeof(IClaimsService), typeof(ClaimsService));
 			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
