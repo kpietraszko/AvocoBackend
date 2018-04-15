@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Repository;
+using AvocoBackend.Repository;
 using AvocoBackend.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using AutoMapper;
+using AvocoBackend.Data.DTOs;
 
 namespace AvocoBackend.Api.Controllers
 {
@@ -40,7 +41,7 @@ namespace AvocoBackend.Api.Controllers
 				if (file?.Length > 0)
 				{
 					await file.CopyToAsync(memoryStream);
-					var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+					var dbUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 					if (dbUser != null)
 					{
 						dbUser.ProfileImage = memoryStream.ToArray();
@@ -60,7 +61,7 @@ namespace AvocoBackend.Api.Controllers
 				return BadRequest(ModelState);
 			}
 			IActionResult response = StatusCode(422);
-			var user = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 			if (user?.ProfileImage != null)
 			{
 				response = File(user.ProfileImage, "image/png");
@@ -68,15 +69,15 @@ namespace AvocoBackend.Api.Controllers
 			return response;
 		}
 		[HttpPut]
-		public async Task<IActionResult> UserInfo(UserInfo userInfo) //string firstName, string lastName, int? region) //to chyba powinien być model
+		public async Task<IActionResult> UserInfo(UserDTO userInfo) //string firstName, string lastName, int? region) //to chyba powinien być model
 		{
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
-			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 			if (dbUser != null)
 			{ //automapper
-				_mapper.Map<User>(userInfo);
+				var mapped = _mapper.Map(userInfo, dbUser);
 				//dbUser.FirstName = firstName ?? dbUser.FirstName;
 				//dbUser.LastName = lastName ?? dbUser.LastName;
 				//dbUser.Region = region ?? dbUser.Region;
@@ -93,10 +94,10 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 			if (dbUser != null)
 			{
-				var userInfo = _mapper.Map<UserInfo>(dbUser);
+				var userInfo = _mapper.Map<UserDTO>(dbUser);
 				return Ok(userInfo);
 			}
 			return StatusCode(422);
@@ -116,7 +117,7 @@ namespace AvocoBackend.Api.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			if(_dbContext.Users.FirstOrDefault(u => u.UserId == userId) == null)
+			if(_dbContext.Users.FirstOrDefault(u => u.Id == userId) == null)
 				return StatusCode(422, "User doesn't exist");
 			var userInterests = _dbContext.UsersInterests.Include(ui => ui.Interest).Include(ui => ui.User)
 					 .Where(ui => ui.UserId == userId);
@@ -135,12 +136,12 @@ namespace AvocoBackend.Api.Controllers
 			var userId = GetUserIdFromClaims(HttpContext);
 			if (userId == null)
 				return Unauthorized();
-			var dbUser = _dbContext.Users.FirstOrDefault(u => u.UserId == userId);
+			var dbUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 			if (dbUser != null)
 			{
 				if (interestId != null) //dodaj istniejace zainteresowanie uzytkownikowi
 				{
-					if (_dbContext.Interests.FirstOrDefault(i => i.InterestId == interestId) != null && //jesli zainteresowanie istnieje 
+					if (_dbContext.Interests.FirstOrDefault(i => i.Id == interestId) != null && //jesli zainteresowanie istnieje 
 						_dbContext.UsersInterests.FirstOrDefault(ui => ui.UserId == userId && ui.InterestId == interestId) == null) //i ten uzytkownik go nie ma
 						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = (int)interestId });
 				}
@@ -149,7 +150,7 @@ namespace AvocoBackend.Api.Controllers
 					if (_dbContext.Interests.FirstOrDefault(i => i.InterestName == interestName) == null) //jesli zainteresowanie o tej nazwie nie istnieje
 					{
 						var newInterest = _dbContext.Interests.Add(new Interest { InterestName = interestName });
-						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = newInterest.Entity.InterestId });
+						_dbContext.UsersInterests.Add(new UserInterest { UserId = (int)userId, InterestId = newInterest.Entity.Id });
 					}
 
 				}
@@ -161,7 +162,7 @@ namespace AvocoBackend.Api.Controllers
 		[HttpGet("/api/[controller]/{userId}/[action]")]
 		public IActionResult Groups(int userId)
 		{
-			if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null)
+			if (_dbContext.Users.FirstOrDefault(u => u.Id == userId) != null)
 			{
 				var groups = _dbContext.GroupsJoinedUsers.Where(g => g.UserId == userId);
 				var groupsData = groups.Include(g => g.Group)
@@ -177,7 +178,7 @@ namespace AvocoBackend.Api.Controllers
 		[HttpGet("/api/[controller]/{groupId}/[action]")] //TODO: przeniesc do kontrolera grupy
 		public IActionResult GroupPicture(int groupId)
 		{
-			var groupDb = _dbContext.Groups.FirstOrDefault(g => g.GroupId == groupId);
+			var groupDb = _dbContext.Groups.FirstOrDefault(g => g.Id == groupId);
 			if (groupDb != null)
 				if (groupDb.GroupPicture != null)
 					return File(groupDb.GroupPicture, "image/png");
@@ -214,8 +215,8 @@ namespace AvocoBackend.Api.Controllers
 			(f.User2Id == userId && f.User1Id == user2Id)) != null;
 			if (!alreadyExists)
 			{
-				if (_dbContext.Users.FirstOrDefault(u => u.UserId == userId) != null &&
-					_dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null)
+				if (_dbContext.Users.FirstOrDefault(u => u.Id == userId) != null &&
+					_dbContext.Users.FirstOrDefault(u => u.Id == user2Id) != null)
 					_dbContext.Friends.Add(new Friend { User1Id = (int)userId, User2Id = user2Id });
 				await _dbContext.SaveChangesAsync();
 				return Ok();
@@ -230,7 +231,7 @@ namespace AvocoBackend.Api.Controllers
 				return Unauthorized();
 			if (user2Id == userId)
 				return StatusCode(422, "User1 == User2");
-			var user2exists = _dbContext.Users.FirstOrDefault(u => u.UserId == user2Id) != null;
+			var user2exists = _dbContext.Users.FirstOrDefault(u => u.Id == user2Id) != null;
 			if (user2exists)
 			{
 				var friendship = _dbContext.Friends.FirstOrDefault(f => (f.User1Id == userId && f.User2Id == user2Id) || //tylko czy Friend istnieje, nie user

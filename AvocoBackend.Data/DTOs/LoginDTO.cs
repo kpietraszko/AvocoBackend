@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AvocoBackend.Data.Models
+namespace AvocoBackend.Data.DTOs
 {
-    public class LoginModel
-    {
+	public class LoginDTO
+	{
 		public string Email { get; set; }
 		public string Password { get; set; }
 	}

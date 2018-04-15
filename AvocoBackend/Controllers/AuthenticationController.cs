@@ -1,104 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using AvocoBackend.Data.Models;
-using Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
+using AvocoBackend.Services.Interfaces;
+using AvocoBackend.Data.DTOs;
 
 namespace AvocoBackend.Api.Controllers
 {
 	[Route("api/[controller]/[action]")]
 	public class AuthenticationController : Controller
 	{
-		private readonly ApplicationDbContext _context;
+		private readonly IAuthService _authService;
 		private readonly IConfiguration _config;
 		private readonly IPasswordHasher<User> _passwordHasher;
 
-		public AuthenticationController(ApplicationDbContext context, IConfiguration config, IPasswordHasher<User> passwordHasher)
+		public AuthenticationController(IAuthService authService, IConfiguration config, IPasswordHasher<User> passwordHasher)
 		{
-			_context = context;
+			_authService = authService;
 			_config = config;
 			_passwordHasher = passwordHasher;
 		}
 
 		[HttpPost]
 		[AllowAnonymous]
-		public async Task<IActionResult> Register([FromBody] RegisterModel userData)
+		public IActionResult Register([FromBody] RegisterDTO userData)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
-			if (_context.Users.Any(u => u.EmailAddress == userData.EmailAddress)) //service
-			{
-				return StatusCode(422, "Email already used");
+			var result = _authService.Register(userData);
+			if (result.IsError)
+				return StatusCode(422, result.Errors);
 
-			}
-			var hashedPassword = _passwordHasher.HashPassword(null, userData.Password); //service
-			var newUser = new User{ //service
-				EmailAddress = userData.EmailAddress,
-				PasswordHash = hashedPassword,
-				FirstName = userData.FirstName,
-				LastName = userData.LastName,
-				Region = userData.Region
-			};
-			_context.Users.Add(newUser); //w repo
-			await _context.SaveChangesAsync();
-
-			return CreatedAtAction("Register", null);
+			return Ok(result.SuccessResult);
 		}
 		[HttpPost]
 		[AllowAnonymous]
-		public IActionResult Login([FromBody]LoginModel loginModel) //zwraca token
+		public IActionResult Login([FromBody]LoginDTO loginData) //zwraca token
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
-			
-			var user = Authenticate(loginModel);
-            if (user != null)
-            {
-                var tokenString = BuildToken(user);
-                return Ok(new { token = tokenString });
-            }
-            return Unauthorized();
+			var result = _authService.Login(loginData);
+			if (result.IsError)
+				return Unauthorized();
 
-		}
-		User Authenticate(LoginModel loginModel)
-		{
-			User user = null;
-			var emailMatchingUser = _context.Users.FirstOrDefault(u => u.EmailAddress == loginModel.Email);
-			if (emailMatchingUser != null)
-			{
-				var hashVerificationResult = _passwordHasher.VerifyHashedPassword(null, emailMatchingUser.PasswordHash, loginModel.Password);
-				if (hashVerificationResult == PasswordVerificationResult.Success)
-					user = emailMatchingUser;
-			}
-			return user;
-		}
-		string BuildToken(User user)
-		{
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-			var token = new JwtSecurityToken(
-				issuer: _config["Jwt:Issuer"],
-				audience: _config["Jwt:Issuer"],
-				expires: DateTime.Now.AddMinutes(_config.GetValue<int>("Jwt:TTL", 30)), //czas z configu, jesli w configu brak to 30min
-				signingCredentials: creds,
-				claims: new Claim[] { new Claim(ClaimTypes.Sid, user.UserId.ToString()) }
-				);
-			return new JwtSecurityTokenHandler().WriteToken(token);
+			return Ok(result.SuccessResult);
 		}
 	}
 }

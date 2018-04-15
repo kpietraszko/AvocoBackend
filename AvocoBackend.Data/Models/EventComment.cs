@@ -5,9 +5,8 @@ using System.Text;
 
 namespace AvocoBackend.Data.Models
 {
-	public class EventComment
+	public class EventComment :BaseModel
 	{
-		public int EventCommentId { get; set; }
 		public int EventId { get; set; }
 		public Event Event { get; set; }
 		public int UserId { get; set; }

@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -23,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AvocoBackend.Data\AvocoBackend.Data.csproj" />
+    <ProjectReference Include="..\AvocoBackend.Services\AvocoBackend.Services.csproj" />
     <ProjectReference Include="..\Repository\AvocoBackend.Repository.csproj" />
   </ItemGroup>
 

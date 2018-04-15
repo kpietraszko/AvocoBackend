@@ -6,16 +6,8 @@ using System.Text;
 
 namespace AvocoBackend.Data.Models
 {
-	public class User
+	public class User :BaseModel
 	{
-		public User(string emailAdress) //HACK: usunać konstruktor
-		{
-			EmailAddress = emailAdress;
-		}
-		public User()
-		{
-		}
-		public int UserId { get; set; }
 		[Required]
 		public string EmailAddress { get; set; }
 		[Required]

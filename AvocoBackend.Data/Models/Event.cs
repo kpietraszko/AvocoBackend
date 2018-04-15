@@ -4,9 +4,8 @@ using System.Text;
 
 namespace AvocoBackend.Data.Models
 {
-    public class Event
+    public class Event :BaseModel
     {
-		public int EventId { get; set; }
 		public int GroupId { get; set; }
 		public Group Group { get; set; }
 		public string EventName { get; set; }

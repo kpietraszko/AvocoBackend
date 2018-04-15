@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace AvocoBackend.Data.Models
+namespace AvocoBackend.Data.DTOs
 {
-	public class RegisterModel
+	public class RegisterDTO
 	{
 		[Required]
 		[RegularExpression("[a-zA-Z]+")]

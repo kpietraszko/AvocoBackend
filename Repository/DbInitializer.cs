@@ -1,5 +1,5 @@
 ﻿using AvocoBackend.Data.Models;
-using Repository;
+using AvocoBackend.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,8 +35,8 @@ namespace AvocoBackend.Repository
 			{
 				var ui = new UserInterest
 				{
-					Interest = context.Interests.First(i => i.InterestId == 1),
-					User = context.Users.First(u => u.UserId == 6)
+					Interest = context.Interests.First(i => i.Id == 1),
+					User = context.Users.First(u => u.Id == 6)
 				};
 				context.UsersInterests.Add(ui);
 				context.SaveChanges();

@@ -15,7 +15,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Repository;
+using AvocoBackend.Repository;
+using AvocoBackend.Repository.Interfaces;
+using AvocoBackend.Services.Interfaces;
+using AvocoBackend.Services.Services;
 
 namespace AvocoBackend
 {
@@ -33,6 +36,9 @@ namespace AvocoBackend
 		{
 			services.AddCors();
 			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+			services.AddTransient(typeof(IAuthService), typeof(AuthService));
+			services.AddTransient(typeof(IUserService), typeof(UserService));
+			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{

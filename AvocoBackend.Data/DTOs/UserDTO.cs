@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AvocoBackend.Data.Models
+namespace AvocoBackend.Data.DTOs
 {
-    public class UserInfo
+    public class UserDTO
     {
 		public int UserId { get; set; }
 		public string FirstName { get; set; }

@@ -5,9 +5,8 @@ using System.Text;
 
 namespace AvocoBackend.Data.Models
 {
-	public class Message
+	public class Message :BaseModel
 	{
-		public int MessageId { get; set; }
 		public string MessageContent { get; set; }
 		public int SenderUserId { get; set; }
 		[InverseProperty("SentMessages")]
