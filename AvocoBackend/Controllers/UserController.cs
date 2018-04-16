@@ -41,16 +41,18 @@ namespace AvocoBackend.Api.Controllers
 			return result.IsError ? StatusCode(422, result.Errors) :
 				Ok(result.SuccessResult);
 		}
-		[HttpGet("/api/[controller]/{userId}/[action]")]
-		public IActionResult Photo(int userId)
+		[HttpGet("/api/[controller]/{userId}/[action]/{size?}")]
+		public IActionResult Photo(int userId, string size)
 		{
-			var result = _userService.GetImage(userId, ImageSize.Original);
+			var imageSize = size == "small" ? ImageSize.Small : ImageSize.Original;
+			var result = _userService.GetImage(userId, imageSize);
 			if (result.IsError)
 			{
 				return StatusCode(422, result.Errors);
 			}
 			return File(result.SuccessResult, "image/png");
 		}
+
 		[HttpPut]
 		public IActionResult UserInfo(UserDTO userInfo) //string firstName, string lastName, int? region) //to chyba powinien być model
 		{

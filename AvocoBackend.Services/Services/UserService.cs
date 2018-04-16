@@ -217,6 +217,10 @@ namespace AvocoBackend.Services.Services
 				return new ServiceResult<byte[]>("User doesn't exist");
 			}
 			var path = imageSize == ImageSize.Original ? dbUser.ProfileImagePath : dbUser.ProfileImageSmallPath;
+			if (path == null)
+			{
+				return new ServiceResult<byte[]>("User doesn't have a photo");
+			}
 			var result = _imageService.GetUserImage(path);
 			return result.IsError ? new ServiceResult<byte[]>(result.Errors) :
 				new ServiceResult<byte[]>(result.SuccessResult);

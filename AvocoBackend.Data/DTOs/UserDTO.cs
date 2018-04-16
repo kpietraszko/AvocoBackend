@@ -10,6 +10,5 @@ namespace AvocoBackend.Data.DTOs
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public int? Region { get; set; }
-		public string ProfileImagePath { get; set; }
 	}
 }
