@@ -96,9 +96,5 @@ namespace AvocoBackend.Repository
 			_dbSet.Remove(entity);
 			_context.SaveChanges();
 		}
-		public void SaveChanges()
-		{
-			_context.SaveChanges();
-		}
 	}
 }

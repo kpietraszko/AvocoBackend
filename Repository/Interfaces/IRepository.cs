@@ -16,6 +16,5 @@ namespace AvocoBackend.Repository.Interfaces
 		void Update(T entity);
 		void Delete(Expression<Func<T, bool>> expression);
 		void Delete(T entity);
-		void SaveChanges();
     }
 }

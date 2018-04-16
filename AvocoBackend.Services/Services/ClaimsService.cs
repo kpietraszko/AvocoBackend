@@ -32,15 +32,5 @@ namespace AvocoBackend.Services.Services
 			}
 
 		}
-
-		//private ServiceResult<int> GetUserIdFromClaims(HttpContext httpContext)
-		//{
-		//	var reqUserIdString = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value;
-		//	if (Int32.TryParse(reqUserIdString, out int reqUserId))
-		//	{
-		//		return new ServiceResult<int>(reqUserId);
-		//	}
-		//	return new ServiceResult<int>("User Id not found in claims");
-		//}
 	}
 }

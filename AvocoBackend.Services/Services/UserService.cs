@@ -3,15 +3,18 @@ using AvocoBackend.Data.DTOs;
 using AvocoBackend.Data.Models;
 using AvocoBackend.Repository.Interfaces;
 using AvocoBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
 namespace AvocoBackend.Services.Services
 {
+	public enum ImageSize { Original, Small };
 	public class UserService : IUserService
 	{
 		private readonly IRepository<User> _userRepository;
@@ -20,13 +23,14 @@ namespace AvocoBackend.Services.Services
 		private readonly IRepository<GroupJoinedUser> _groupJoinedRepository;
 		private readonly IRepository<Friend> _friendRepository;
 		private readonly IClaimsService _claimsService;
-
+		private readonly IImageService _imageService;
+		private readonly IHostingEnvironment _hostingEnvironment;
 		private readonly IMapper _mapper;
 
 		public UserService(IRepository<User> userRepository, IRepository<UserInterest> userInterestRepository,
 			IRepository<Interest> interestRepository, IRepository<GroupJoinedUser> groupJoinedRepository,
 			IRepository<Friend> friendRepository,
-			IClaimsService claimsService, IMapper mapper)
+			IClaimsService claimsService, IMapper mapper, IImageService imageService, IHostingEnvironment hostingEnvironment)
 		{
 			_userRepository = userRepository;
 			_claimsService = claimsService;
@@ -35,6 +39,8 @@ namespace AvocoBackend.Services.Services
 			_interestRepository = interestRepository;
 			_groupJoinedRepository = groupJoinedRepository;
 			_friendRepository = friendRepository;
+			_imageService = imageService;
+			_hostingEnvironment = hostingEnvironment;
 		}
 
 		public ServiceResult<UserDTO> GetUserInfo(int userId)
@@ -61,8 +67,8 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<UserDTO>("User doesn't exist");
 			}
-			var updatedUser = _mapper.Map(userInfo, dbUser);
-			_userRepository.SaveChanges();
+			_mapper.Map(userInfo, dbUser);
+			_userRepository.Update(dbUser);
 			return new ServiceResult<UserDTO>(userInfo);
 		}
 
@@ -201,6 +207,43 @@ namespace AvocoBackend.Services.Services
 			}
 			_friendRepository.Delete(friendship);
 			return GetFriends(httpContext);
+		}
+
+		public ServiceResult<byte[]> GetImage(int userId, ImageSize imageSize)
+		{
+			var dbUser = _userRepository.GetBy(u => u.Id == userId);
+			if (dbUser == null)
+			{
+				return new ServiceResult<byte[]>("User doesn't exist");
+			}
+			var path = imageSize == ImageSize.Original ? dbUser.ProfileImagePath : dbUser.ProfileImageSmallPath;
+			var result = _imageService.GetUserImage(path);
+			return result.IsError ? new ServiceResult<byte[]>(result.Errors) :
+				new ServiceResult<byte[]>(result.SuccessResult);
+		}
+
+		public ServiceResult<ImagePathsDTO> SetImage(IFormFile image, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+			if (userId == null)
+			{
+				return new ServiceResult<ImagePathsDTO>("UserId not found in claims");
+			}
+			var dbUser = _userRepository.GetBy(u => u.Id == userId);
+			if (dbUser == null)
+			{
+				return new ServiceResult<ImagePathsDTO>("User doesn't exist");
+			}
+			var result = _imageService.SaveUserImages((int)userId, image);
+			if (result.IsError)
+			{
+				return new ServiceResult<ImagePathsDTO>(result.Errors);
+			}
+			var paths = result.SuccessResult;
+			_mapper.Map(paths, dbUser);
+			_userRepository.Update(dbUser);
+
+			return new ServiceResult<ImagePathsDTO>(paths);
 		}
 	}
 }

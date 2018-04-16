@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0003" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AvocoBackend.Data\AvocoBackend.Data.csproj" />
     <ProjectReference Include="..\Repository\AvocoBackend.Repository.csproj" />
   </ItemGroup>

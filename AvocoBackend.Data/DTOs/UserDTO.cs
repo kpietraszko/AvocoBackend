@@ -9,7 +9,7 @@ namespace AvocoBackend.Data.DTOs
 		public int Id { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
-		public int? Region { get; set; } 
-		//jeszcze ProfileImage
+		public int? Region { get; set; }
+		public string ProfileImagePath { get; set; }
 	}
 }

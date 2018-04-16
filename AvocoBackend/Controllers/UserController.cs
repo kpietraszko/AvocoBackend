@@ -14,6 +14,7 @@ using System.Security.Claims;
 using AutoMapper;
 using AvocoBackend.Data.DTOs;
 using AvocoBackend.Services.Interfaces;
+using AvocoBackend.Services.Services;
 
 namespace AvocoBackend.Api.Controllers
 {
@@ -29,46 +30,27 @@ namespace AvocoBackend.Api.Controllers
 			_userService = userService;
 			_claimsService = claimsService;
 		}
-		//[HttpPut]
-		//public async Task<IActionResult> Photo(IFormFile file)
-		//{
-		//	IActionResult response = StatusCode(422);
-		//	var userId = GetUserIdFromClaims(HttpContext);
-		//	if (userId == null)
-		//		return Unauthorized();
-
-		//	using (var memoryStream = new MemoryStream())
-		//	{
-		//		if (file?.Length > 0)
-		//		{
-		//			await file.CopyToAsync(memoryStream);
-		//			var dbUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-		//			if (dbUser != null)
-		//			{
-		//				dbUser.ProfileImage = memoryStream.ToArray();
-		//				response = Ok(); //od razu zwracac
-		//			}
-		//		}
-		//	}
-		//	await _dbContext.SaveChangesAsync();
-
-		//	return response;
-		//}
-		//[HttpGet("/api/[controller]/{userId}/[action]")]
-		//public IActionResult Photo(int userId)
-		//{
-		//	if (!ModelState.IsValid)
-		//	{
-		//		return BadRequest(ModelState);
-		//	}
-		//	IActionResult response = StatusCode(422);
-		//	var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-		//	if (user?.ProfileImage != null)
-		//	{
-		//		response = File(user.ProfileImage, "image/png");
-		//	}
-		//	return response;
-		//}
+		[HttpPut]
+		public IActionResult Photo(IFormFile file)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			var result = _userService.SetImage(file, HttpContext);
+			return result.IsError ? StatusCode(422, result.Errors) :
+				Ok(result.SuccessResult);
+		}
+		[HttpGet("/api/[controller]/{userId}/[action]")]
+		public IActionResult Photo(int userId)
+		{
+			var result = _userService.GetImage(userId, ImageSize.Original);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return File(result.SuccessResult, "image/png");
+		}
 		[HttpPut]
 		public IActionResult UserInfo(UserDTO userInfo) //string firstName, string lastName, int? region) //to chyba powinien być model
 		{
