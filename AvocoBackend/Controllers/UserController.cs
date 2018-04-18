@@ -75,6 +75,7 @@ namespace AvocoBackend.Api.Controllers
 			return result.IsError ? StatusCode(422, result.Errors) :
 				Ok(result.SuccessResult);
 		}
+		[AllowAnonymous]
 		[HttpGet("{searchText}")]
 		public IActionResult SearchInterests(string searchText)
 		{

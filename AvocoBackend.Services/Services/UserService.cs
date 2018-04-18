@@ -226,28 +226,33 @@ namespace AvocoBackend.Services.Services
 				new ServiceResult<byte[]>(result.SuccessResult);
 		}
 
-		public ServiceResult<ImagePathsDTO> SetImage(IFormFile image, HttpContext httpContext)
+		public ServiceResult<byte[]> SetImage(IFormFile image, HttpContext httpContext)
 		{
 			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
 			if (userId == null)
 			{
-				return new ServiceResult<ImagePathsDTO>("UserId not found in claims");
+				return new ServiceResult<byte[]>("UserId not found in claims");
 			}
 			var dbUser = _userRepository.GetBy(u => u.Id == userId);
 			if (dbUser == null)
 			{
-				return new ServiceResult<ImagePathsDTO>("User doesn't exist");
+				return new ServiceResult<byte[]>("User doesn't exist");
 			}
 			var result = _imageService.SaveUserImages((int)userId, image);
 			if (result.IsError)
 			{
-				return new ServiceResult<ImagePathsDTO>(result.Errors);
+				return new ServiceResult<byte[]>(result.Errors);
 			}
 			var paths = result.SuccessResult;
 			_mapper.Map(paths, dbUser);
 			_userRepository.Update(dbUser);
 
-			return new ServiceResult<ImagePathsDTO>(paths);
+			var getResult = GetImage((int)userId, ImageSize.Original);
+			if (getResult.IsError)
+			{
+				return new ServiceResult<byte[]>(getResult.Errors);
+			}
+			return new ServiceResult<byte[]>(getResult.SuccessResult);
 		}
 	}
 }

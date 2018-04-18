@@ -6,6 +6,7 @@ namespace AvocoBackend.Data.DTOs
 {
 	public class InterestDTO
 	{
+		public int Id { get; set; }
 		public string InterestName { get; set; }
 	}
 }

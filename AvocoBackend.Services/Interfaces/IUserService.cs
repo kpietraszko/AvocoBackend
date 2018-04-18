@@ -17,6 +17,6 @@ namespace AvocoBackend.Services.Interfaces
 		ServiceResult<UserDTO[]> AddFriend(int user2Id, HttpContext httpContext); // zwraca wszystkich znajomych
 		ServiceResult<UserDTO[]> Unfriend(int user2Id, HttpContext httpContext); // j.w.
 		ServiceResult<byte[]> GetImage(int userId, ImageSize imageSize);
-		ServiceResult<ImagePathsDTO> SetImage(IFormFile image, HttpContext httpContext);
+		ServiceResult<byte[]> SetImage(IFormFile image, HttpContext httpContext);
  	}
 }
