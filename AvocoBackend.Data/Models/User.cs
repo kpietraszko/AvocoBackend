@@ -17,8 +17,8 @@ namespace AvocoBackend.Data.Models
 		[Required]
 		public string LastName { get; set; }
 		public int? Region { get; set; }
-		public string ProfileImagePath { get; set; }
-		public string ProfileImageSmallPath { get; set; }
+		public string ImagePath { get; set; }
+		public string ImageSmallPath { get; set; }
 		
 		public ICollection<GroupJoinedUser> GroupsJoinedUser { get; set; }
 		public ICollection<EventJoinedUser> EventsJoinedUser { get; set; }

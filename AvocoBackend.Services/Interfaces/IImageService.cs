@@ -11,7 +11,7 @@ namespace AvocoBackend.Services.Interfaces
 {
     public interface IImageService
     {
-		ServiceResult<byte[]> GetUserImage(string path);
-		ServiceResult<ImagePathsDTO> SaveUserImages(int userId, IFormFile sentFile);
+		ServiceResult<byte[]> GetImage(string path);
+		ServiceResult<ImagePathsDTO> SaveImages(int id, IFormFile sentFile, string directory);
 	}
 }

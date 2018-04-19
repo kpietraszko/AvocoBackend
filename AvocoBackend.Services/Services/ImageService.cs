@@ -24,7 +24,7 @@ namespace AvocoBackend.Services.Services
 			_hostingEnvironment = hostingEnvironment;
 		}
 
-		public ServiceResult<byte[]> GetUserImage(string path)
+		public ServiceResult<byte[]> GetImage(string path)
 		{
 			var absolutePath = Path.Combine(_hostingEnvironment.ContentRootPath, path);
 			try
@@ -44,12 +44,12 @@ namespace AvocoBackend.Services.Services
 			}
 		}
 
-		public ServiceResult<ImagePathsDTO> SaveUserImages(int userId, IFormFile sentFile)
+		public ServiceResult<ImagePathsDTO> SaveImages(int id, IFormFile sentFile, string directory)
 		{
 			var contentRoot = _hostingEnvironment.ContentRootPath;
-			string pathFromConfig = _config.GetValue<string>("Images:Directories:Users");
-			var orgImageName = userId.ToString() + ".png";
-			var smallImageName = userId.ToString() + "_small" + ".png";
+			string pathFromConfig = _config.GetValue<string>($"Images:Directories:{directory}");
+			var orgImageName = id.ToString() + ".png";
+			var smallImageName = id.ToString() + "_small" + ".png";
 			var originalImageRelPath = Path.Combine(pathFromConfig, orgImageName);
 			var originalImagePath = Path.Combine(contentRoot, originalImageRelPath);
 			var smallImageRelPath = Path.Combine(pathFromConfig, smallImageName);
@@ -81,8 +81,8 @@ namespace AvocoBackend.Services.Services
 				}
 				return new ServiceResult<ImagePathsDTO>(new ImagePathsDTO
 				{
-					ProfileImagePath = originalImageRelPath,
-					ProfileImageSmallPath = smallImageRelPath
+					ImagePath = originalImageRelPath,
+					ImageSmallPath = smallImageRelPath
 				});
 			}
 			catch (Exception e)

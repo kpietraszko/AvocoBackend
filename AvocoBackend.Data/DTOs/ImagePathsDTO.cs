@@ -6,7 +6,7 @@ namespace AvocoBackend.Data.DTOs
 {
 	public class ImagePathsDTO
 	{
-		public string ProfileImagePath { get; set; }
-		public string ProfileImageSmallPath { get; set; }
+		public string ImagePath { get; set; }
+		public string ImageSmallPath { get; set; }
 	}
 }

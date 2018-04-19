@@ -24,7 +24,6 @@ namespace AvocoBackend.Services.Services
 		private readonly IRepository<Friend> _friendRepository;
 		private readonly IClaimsService _claimsService;
 		private readonly IImageService _imageService;
-		private readonly IHostingEnvironment _hostingEnvironment;
 		private readonly IMapper _mapper;
 
 		public UserService(IRepository<User> userRepository, IRepository<UserInterest> userInterestRepository,
@@ -40,7 +39,6 @@ namespace AvocoBackend.Services.Services
 			_groupJoinedRepository = groupJoinedRepository;
 			_friendRepository = friendRepository;
 			_imageService = imageService;
-			_hostingEnvironment = hostingEnvironment;
 		}
 
 		public ServiceResult<UserDTO> GetUserInfo(int userId)
@@ -216,12 +214,12 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<byte[]>("User doesn't exist");
 			}
-			var path = imageSize == ImageSize.Original ? dbUser.ProfileImagePath : dbUser.ProfileImageSmallPath;
+			var path = imageSize == ImageSize.Original ? dbUser.ImagePath : dbUser.ImageSmallPath;
 			if (path == null)
 			{
 				return new ServiceResult<byte[]>("User doesn't have a photo");
 			}
-			var result = _imageService.GetUserImage(path);
+			var result = _imageService.GetImage(path);
 			return result.IsError ? new ServiceResult<byte[]>(result.Errors) :
 				new ServiceResult<byte[]>(result.SuccessResult);
 		}
@@ -238,7 +236,7 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<byte[]>("User doesn't exist");
 			}
-			var result = _imageService.SaveUserImages((int)userId, image);
+			var result = _imageService.SaveImages((int)userId, image, "Users");
 			if (result.IsError)
 			{
 				return new ServiceResult<byte[]>(result.Errors);

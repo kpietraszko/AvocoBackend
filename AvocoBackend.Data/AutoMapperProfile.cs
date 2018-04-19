@@ -30,8 +30,15 @@ namespace AvocoBackend.Api
 			CreateMap<Interest, InterestDTO>();
 
 			CreateMap<ImagePathsDTO, User>()
-				.ForMember(u => u.ProfileImagePath, opts => opts.MapFrom(ip => ip.ProfileImagePath))
-				.ForMember(u => u.ProfileImageSmallPath, opts => opts.MapFrom(ip => ip.ProfileImageSmallPath))
+				.ForMember(u => u.ImagePath, opts => opts.MapFrom(ip => ip.ImagePath))
+				.ForMember(u => u.ImageSmallPath, opts => opts.MapFrom(ip => ip.ImageSmallPath))
+				.ForAllOtherMembers(opts => opts.UseDestinationValue());
+
+			CreateMap<CreateGroupDTO, Group>()
+				.ForSourceMember(cg => cg.GroupImage, opts => opts.Ignore());
+
+			CreateMap<ImagePathsDTO, Group>()
+				.ForMember(g => g.GroupPicture, opts => opts.MapFrom(ip => ip.ImagePath))
 				.ForAllOtherMembers(opts => opts.UseDestinationValue());
 		}
 	}
