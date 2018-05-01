@@ -70,7 +70,7 @@ namespace AvocoBackend.Services.Services
 			return new ServiceResult<UserDTO>(userInfo);
 		}
 
-		public ServiceResult<InterestDTO[]> GetInterests(int userId) //dziala
+		public ServiceResult<InterestDTO[]> GetInterests(int userId)
 		{
 			var dbUser = _userRepository.GetBy(u => u.Id == userId);
 			if (dbUser == null)
