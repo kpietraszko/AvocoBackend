@@ -2,6 +2,8 @@
 using AvocoBackend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Text;
 
 namespace AvocoBackend.Api.Controllers
 {
@@ -58,6 +60,27 @@ namespace AvocoBackend.Api.Controllers
 				return StatusCode(422, ModelState);
 			}
 			return File(result.SuccessResult, "image/png");
+		}
+		[HttpPost("/api/[controller]/{groupId}/[action]")]
+		public IActionResult AddPost(int groupId, [FromForm]string postContent) //frombody moze nie zadzialac, sprawdzic
+		{
+
+			var result = _groupService.AddPost(groupId, postContent, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, ModelState);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpGet("/api/[controller]/{groupId}/[action]")]
+		public IActionResult Posts(int groupId)
+		{
+			var result = _groupService.GetGroupsPosts(groupId);
+			if (result.IsError)
+			{
+				return StatusCode(422, ModelState);
+			}
+			return Ok(result.SuccessResult);
 		}
 	}
 }

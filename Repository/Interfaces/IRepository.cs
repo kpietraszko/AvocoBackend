@@ -16,5 +16,7 @@ namespace AvocoBackend.Repository.Interfaces
 		void Update(T entity);
 		void Delete(Expression<Func<T, bool>> expression);
 		void Delete(T entity);
-    }
+		void GetRelatedCollections(T entity, params Expression<Func<T, IEnumerable<object>>>[] collections);
+		void GetRelatedCollectionsWithObject<TInclude>(T entity, Expression<Func<T, IEnumerable<TInclude>>> collection, Expression<Func<TInclude, object>> include) where TInclude : class;
+	}
 }

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace AvocoBackend.Repository
 {
-	public class Repository<T> : IRepository<T> where T:class//where T:BaseModel
+	public class Repository<T> : IRepository<T> where T : class//where T:BaseModel
 	{
 		private readonly ApplicationDbContext _context;
 		private DbSet<T> _dbSet;
@@ -95,6 +95,17 @@ namespace AvocoBackend.Repository
 			}
 			_dbSet.Remove(entity);
 			_context.SaveChanges();
+		}
+		public void GetRelatedCollections(T entity, params Expression<Func<T, IEnumerable<object>>>[] collections)
+		{
+			foreach (var collection in collections)
+			{
+				_context.Entry(entity).Collection(collection).Load();
+			}
+		}
+		public void GetRelatedCollectionsWithObject<TInclude>(T entity, Expression<Func<T, IEnumerable<TInclude>>> collection, Expression<Func<TInclude, object>> include) where TInclude : class
+		{
+			_context.Entry(entity).Collection(collection).Query().Include(include).Load();
 		}
 	}
 }

@@ -40,6 +40,8 @@ namespace AvocoBackend.Api
 			CreateMap<ImagePathsDTO, Group>()
 				.ForMember(g => g.GroupPicture, opts => opts.MapFrom(ip => ip.ImagePath))
 				.ForAllOtherMembers(opts => opts.UseDestinationValue());
+
+			CreateMap<Post, PostDTO>();
 		}
 	}
 

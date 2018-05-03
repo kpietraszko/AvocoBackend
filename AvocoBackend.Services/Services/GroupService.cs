@@ -3,9 +3,11 @@ using AvocoBackend.Data.DTOs;
 using AvocoBackend.Data.Models;
 using AvocoBackend.Repository.Interfaces;
 using AvocoBackend.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace AvocoBackend.Services.Services
@@ -14,17 +16,20 @@ namespace AvocoBackend.Services.Services
 	{
 		private readonly IRepository<Group> _groupRepository;
 		private readonly IRepository<GroupInterest> _groupInterestRepository;
+		private readonly IRepository<Post> _postRepository;
 		private readonly IMapper _mapper;
 		private readonly IImageService _imageService;
+		private readonly IClaimsService _claimsService;
 
-		public GroupService(IRepository<Group> groupRepository, IRepository<GroupInterest> groupInterestRepository, IMapper mapper, IImageService imageService)
+		public GroupService(IRepository<Group> groupRepository, IRepository<GroupInterest> groupInterestRepository, IRepository<Post> postRepository, IMapper mapper, IImageService imageService, IClaimsService claimsService)
 		{
 			_groupRepository = groupRepository;
 			_groupInterestRepository = groupInterestRepository;
+			_postRepository = postRepository;
 			_mapper = mapper;
 			_imageService = imageService;
+			_claimsService = claimsService;
 		}
-
 		public ServiceResult<int> CreateGroup(CreateGroupDTO groupData)
 		{
 			var newGroup = _mapper.Map<Group>(groupData);
@@ -79,6 +84,44 @@ namespace AvocoBackend.Services.Services
 			var result = _imageService.GetImage(path);
 			return result.IsError ? new ServiceResult<byte[]>(result.Errors) :
 				new ServiceResult<byte[]>(result.SuccessResult);
+		}
+
+		public ServiceResult<PostDTO[]> AddPost(int groupId, string postContent, HttpContext httpContext)
+		{
+			if (String.IsNullOrWhiteSpace(postContent))
+			{
+				return new ServiceResult<PostDTO[]>("Post content is empty");
+			}
+			var dbGroup = _groupRepository.GetBy(g => g.Id == groupId);
+			if (dbGroup == null)
+			{
+				return new ServiceResult<PostDTO[]>("Group doesn't exist");
+			}
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+
+			if (userId == null)
+			{
+				return new ServiceResult<PostDTO[]>("UserId not found in claims");
+			}
+			var newPost = new Post{ GroupId = groupId, UserId = (int)userId, Content = postContent};
+			_postRepository.Insert(newPost);
+			return GetGroupsPosts(groupId); //zwraca wszystkie posty tej grupy
+		}
+
+		public ServiceResult<PostDTO[]> GetGroupsPosts(int groupId)
+		{
+			var dbGroup = _groupRepository.GetBy(g => g.Id == groupId);
+			if (dbGroup == null)
+			{
+				return new ServiceResult<PostDTO[]>("Group doesn't exist");
+			}
+			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId).ToArray();
+			foreach (var post in groupsPosts)
+			{
+				_postRepository.GetRelatedCollections(post, p => p.PostComments);
+			}
+			var mappedPosts = _mapper.Map<PostDTO[]>(groupsPosts);
+			return new ServiceResult<PostDTO[]>(mappedPosts);
 		}
 	}
 }
