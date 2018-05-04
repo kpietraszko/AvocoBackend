@@ -42,6 +42,10 @@ namespace AvocoBackend.Api
 				.ForAllOtherMembers(opts => opts.UseDestinationValue());
 
 			CreateMap<Post, PostDTO>();
+
+			CreateMap<PostComment, CommentDTO>()
+				.ForMember(pc => pc.FirstName, opts => opts.MapFrom(c => c.User.FirstName))
+				.ForMember(pc => pc.LastName, opts => opts.MapFrom(c => c.User.LastName));
 		}
 	}
 

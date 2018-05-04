@@ -115,12 +115,26 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<PostDTO[]>("Group doesn't exist");
 			}
-			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId).ToArray();
+			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId, p => p.User).ToArray();
 			foreach (var post in groupsPosts)
 			{
-				_postRepository.GetRelatedCollections(post, p => p.PostComments);
+				_postRepository.GetRelatedCollectionsWithObject(post, p => p.PostComments, pc => pc.User);
 			}
-			var mappedPosts = _mapper.Map<PostDTO[]>(groupsPosts);
+			var mappedPosts = _mapper.Map<PostDTO[]>(groupsPosts); //dolaczyc jakos zdjecie autora postu i zdjecia autorow komentarzy
+			foreach (var post in mappedPosts)
+			{
+				post.FirstName = post.User.FirstName;
+				post.LastName = post.User.LastName;
+				var authorImage = _imageService.GetImage(post.User.ImageSmallPath);
+				post.UserImage = authorImage.SuccessResult;
+
+				foreach (var comment in post.PostComments)
+				{
+					var commentAuthorImage = _imageService.GetImage(comment.User.ImageSmallPath);
+					comment.UserImage = commentAuthorImage.SuccessResult;
+				}
+			}
+
 			return new ServiceResult<PostDTO[]>(mappedPosts);
 		}
 	}

@@ -6,17 +6,14 @@ using System.Text;
 
 namespace AvocoBackend.Data.DTOs
 {
-	public class PostDTO
+	public class CommentDTO
 	{
-		public int Id { get; set; }
-		public int GroupId { get; set; }
+		public string Content { get; set; }
 		public int UserId { get; set; }
 		[JsonIgnore]
 		public User User { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public byte[] UserImage { get; set; }
-		public string Content { get; set; }
-		public ICollection<CommentDTO> PostComments { get; set; }
 	}
 }
