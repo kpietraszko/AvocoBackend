@@ -17,15 +17,21 @@ namespace AvocoBackend.Services.Services
 		private readonly IRepository<Group> _groupRepository;
 		private readonly IRepository<GroupInterest> _groupInterestRepository;
 		private readonly IRepository<Post> _postRepository;
+		private readonly IRepository<PostComment> _commentsRepository;
+		private readonly IRepository<GroupJoinedUser> _groupsUsersRepository;
 		private readonly IMapper _mapper;
 		private readonly IImageService _imageService;
 		private readonly IClaimsService _claimsService;
 
-		public GroupService(IRepository<Group> groupRepository, IRepository<GroupInterest> groupInterestRepository, IRepository<Post> postRepository, IMapper mapper, IImageService imageService, IClaimsService claimsService)
+		public GroupService(IRepository<Group> groupRepository, IRepository<GroupInterest> groupInterestRepository, IRepository<Post> postRepository,
+			IRepository<PostComment> commentsRepository, IRepository<GroupJoinedUser> groupsUsersRepository,
+			IMapper mapper, IImageService imageService, IClaimsService claimsService)
 		{
 			_groupRepository = groupRepository;
 			_groupInterestRepository = groupInterestRepository;
 			_postRepository = postRepository;
+			_commentsRepository = commentsRepository;
+			_groupsUsersRepository = groupsUsersRepository;
 			_mapper = mapper;
 			_imageService = imageService;
 			_claimsService = claimsService;
@@ -115,7 +121,7 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<PostDTO[]>("Group doesn't exist");
 			}
-			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId, p => p.User).ToArray();
+			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId, p => p.User).OrderByDescending(p => p.Id).ToArray();
 			foreach (var post in groupsPosts)
 			{
 				_postRepository.GetRelatedCollectionsWithObject(post, p => p.PostComments, pc => pc.User);
@@ -136,6 +142,90 @@ namespace AvocoBackend.Services.Services
 			}
 
 			return new ServiceResult<PostDTO[]>(mappedPosts);
+		}
+
+		public ServiceResult<PostDTO[]> AddComment(int postId, string commentContent, HttpContext httpContext)
+		{
+			if (String.IsNullOrWhiteSpace(commentContent))
+			{
+				return new ServiceResult<PostDTO[]>("Comment content is empty");
+			}
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+
+			if (userId == null)
+			{
+				return new ServiceResult<PostDTO[]>("UserId not found in claims");
+			}
+			var dbPost = _postRepository.GetBy(p => p.Id == postId);
+			if (dbPost == null)
+			{
+				return new ServiceResult<PostDTO[]>("Post doesn't exist");
+			}
+			var newComment = new PostComment{ PostId = postId, UserId = (int)userId, Content = commentContent};
+			_commentsRepository.Insert(newComment);
+
+			var dbGroup = _groupRepository.GetBy(g => g.Id == dbPost.GroupId);
+			if (dbGroup == null)
+			{
+				return new ServiceResult<PostDTO[]>("Group doesn't exist");
+			}
+
+			return GetGroupsPosts(dbGroup.Id);
+		}
+
+		public ServiceResult<bool> JoinGroup(int groupId, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+
+			if (userId == null)
+			{
+				return new ServiceResult<bool>("UserId not found in claims");
+			}
+			var dbGroup = _groupRepository.GetBy(g => g.Id == groupId);
+			if (dbGroup == null)
+			{
+				return new ServiceResult<bool>("Group doesn't exist");
+			}
+			var userInGroup = _groupsUsersRepository.GetBy(gu => gu.GroupId == groupId && gu.UserId == userId);
+			if (userInGroup != null)
+			{
+				return new ServiceResult<bool>("User already joined this group");
+			}
+			_groupsUsersRepository.Insert(new GroupJoinedUser { GroupId = groupId, UserId = (int)userId });
+			return new ServiceResult<bool>(true);
+		}
+
+		public ServiceResult<bool> LeaveGroup(int groupId, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+
+			if (userId == null)
+			{
+				return new ServiceResult<bool>("UserId not found in claims");
+			}
+			var userInGroup = _groupsUsersRepository.GetBy(gu => gu.GroupId == groupId && gu.UserId == userId);
+			if (userInGroup == null)
+			{
+				return new ServiceResult<bool>("User not in group");
+			}
+			_groupsUsersRepository.Delete(userInGroup);
+			return new ServiceResult<bool>(true);
+		}
+
+		public ServiceResult<bool> UserInGroup(int groupId, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+
+			if (userId == null)
+			{
+				return new ServiceResult<bool>("UserId not found in claims");
+			}
+			var userInGroup = _groupsUsersRepository.GetBy(gu => gu.GroupId == groupId && gu.UserId == userId);
+			if (userInGroup == null)
+			{
+				return new ServiceResult<bool>(false);
+			}
+			return new ServiceResult<bool>(true);
 		}
 	}
 }

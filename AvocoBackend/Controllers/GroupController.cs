@@ -37,7 +37,7 @@ namespace AvocoBackend.Api.Controllers
 			var result = _groupService.GetGroupInfo(groupId);
 			if (result.IsError)
 			{
-				return StatusCode(422, ModelState);
+				return StatusCode(422, result.Errors);
 			}
 			return Ok(result.SuccessResult);
 		}
@@ -47,7 +47,7 @@ namespace AvocoBackend.Api.Controllers
 			var result = _groupService.GetGroupInterests(groupId);
 			if (result.IsError)
 			{
-				return StatusCode(422, ModelState);
+				return StatusCode(422, result.Errors);
 			}
 			return Ok(result.SuccessResult);
 		}
@@ -57,18 +57,18 @@ namespace AvocoBackend.Api.Controllers
 			var result = _groupService.GetImage(groupId);
 			if (result.IsError)
 			{
-				return StatusCode(422, ModelState);
+				return StatusCode(422, result.Errors);
 			}
 			return File(result.SuccessResult, "image/png");
 		}
 		[HttpPost("/api/[controller]/{groupId}/[action]")]
-		public IActionResult AddPost(int groupId, [FromForm]string postContent) //frombody moze nie zadzialac, sprawdzic
+		public IActionResult AddPost(int groupId, [FromForm]string postContent) //frombody nie działa
 		{
 
 			var result = _groupService.AddPost(groupId, postContent, HttpContext);
 			if (result.IsError)
 			{
-				return StatusCode(422, ModelState);
+				return StatusCode(422, result.Errors);
 			}
 			return Ok(result.SuccessResult);
 		}
@@ -78,7 +78,47 @@ namespace AvocoBackend.Api.Controllers
 			var result = _groupService.GetGroupsPosts(groupId);
 			if (result.IsError)
 			{
-				return StatusCode(422, ModelState);
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpPost("/api/[controller]/[action]/{postId}")]
+		public IActionResult AddComment(int postId, [FromForm]string comment)
+		{
+			var result = _groupService.AddComment(postId, comment, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpPut("/api/[controller]/{groupId}/[action]")]
+		public IActionResult JoinGroup(int groupId)
+		{
+			var result = _groupService.JoinGroup(groupId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpPut("/api/[controller]/{groupId}/[action]")]
+		public IActionResult LeaveGroup(int groupId)
+		{
+			var result = _groupService.LeaveGroup(groupId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpGet("/api/[controller]/{groupId}/[action]")]
+		public IActionResult UserInGroup(int groupId)
+		{
+			var result = _groupService.UserInGroup(groupId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
 			}
 			return Ok(result.SuccessResult);
 		}

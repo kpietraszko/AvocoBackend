@@ -14,5 +14,9 @@ namespace AvocoBackend.Services.Interfaces
 		ServiceResult<byte[]> GetImage(int groupId);
 		ServiceResult<PostDTO[]> AddPost(int groupId, string postContent, HttpContext httpContext);
 		ServiceResult<PostDTO[]> GetGroupsPosts(int groupId);
+		ServiceResult<PostDTO[]> AddComment(int postId, string commentContent, HttpContext httpContext);
+		ServiceResult<bool> JoinGroup(int groupId, HttpContext httpContext);
+		ServiceResult<bool> LeaveGroup(int groupId, HttpContext httpContext);
+		ServiceResult<bool> UserInGroup(int groupId, HttpContext httpContext);
 	 }
 }
