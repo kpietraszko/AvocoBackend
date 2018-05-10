@@ -79,7 +79,7 @@ namespace AvocoBackend.Services.Services
 			}
 			var userInterests = _userInterestRepository.GetAllBy(ui => ui.UserId == userId,
 				ui => ui.Interest, ui => ui.User); //includes
-			var interests = userInterests.Select(ui => new InterestDTO {InterestName = ui.Interest.InterestName}).ToArray();
+			var interests = userInterests.Select(ui => new InterestDTO {Id=ui.InterestId, InterestName = ui.Interest.InterestName}).ToArray(); //zmienic na automapper
 			return new ServiceResult<InterestDTO[]>(interests);
 
 		}
