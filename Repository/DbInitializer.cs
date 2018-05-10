@@ -15,21 +15,29 @@ namespace AvocoBackend.Repository
 			if (!context.Interests.Any())
 			{
 				context.Interests.AddRange(
-					new Interest
-					{
-						InterestName = "Filmy"
-					},
+					new Interest { InterestName = "Filmy" },
 					new Interest { InterestName = "Zwierzęta" },
 					new Interest { InterestName = "Gotowanie" },
-					new Interest { InterestName = "Fotografia" });
-				context.SaveChanges();
+					new Interest { InterestName = "Fotografia" },
+                    new Interest { InterestName = "Wojskowosc" },
+                    new Interest { InterestName = "Muzyka" },
+                    new Interest { InterestName = "Programiowanie" },
+                    new Interest { InterestName = "Podroze" },
+                    new Interest { InterestName = "Motoryzacja" },
+                    new Interest { InterestName = "Zielarstwo" },
+                    new Interest { InterestName = "Bieganie" });
+
+                context.SaveChanges();
 			}
 			if (!context.Groups.Any())
 			{
 				context.Groups.AddRange(
 					new Group { GroupName = "Militaria" },
-					new Group { GroupName = "Gotowanie w lesie" });
-				context.SaveChanges();
+					new Group { GroupName = "Gotowanie w lesi+e" },
+                    new Group { GroupName = "Biegacze w Olsztynie" },
+                    new Group { GroupName = "Poczatkujacy programisci" },
+                    new Group { GroupName = "Fotografowie przyrody" });
+                context.SaveChanges();
 			}
 			if (!context.UsersInterests.Any())
 			{
@@ -49,15 +57,30 @@ namespace AvocoBackend.Repository
 			context.SaveChanges();
 			if (!context.GroupsJoinedUsers.Any())
 			{
-				context.GroupsJoinedUsers.AddRange(new GroupJoinedUser { UserId = 6, GroupId = 1 },
-					new GroupJoinedUser { UserId = 6, GroupId = 2 });
+                context.GroupsJoinedUsers.AddRange(
+                    new GroupJoinedUser { UserId = 6, GroupId = 1 },
+                    new GroupJoinedUser { UserId = 6, GroupId = 2 },
+                    new GroupJoinedUser { UserId = 6, GroupId = 3 },
+                    new GroupJoinedUser { UserId = 6, GroupId = 4 },
+                    new GroupJoinedUser { UserId = 6, GroupId = 5 });
 				context.SaveChanges();
 			}
 			if (!context.Events.Any())
 			{
 				context.Events.Add(new Event { GroupId = 1, EventName = "ASG w terenie", EventDateTime = new DateTime(2018, 5, 29, 16, 0, 0), EventLocationLat = 53.777367, EventLocationLng = 20.484959 });
-				context.SaveChanges();
+                context.Events.Add(new Event { GroupId = 2, EventName = "Maraton filmowy", EventDateTime = new DateTime(2018, 6, 21, 22, 20, 0), EventLocationLat = 53.477367, EventLocationLng = 20.284959 });
+                context.Events.Add(new Event { GroupId = 3, EventName = "Szkolenie z pythona", EventDateTime = new DateTime(2018, 7, 11, 11, 0, 0), EventLocationLat = 53.977367, EventLocationLng = 20.384959 });
+                context.Events.Add(new Event { GroupId = 4, EventName = "Sesja zdjeciowa", EventDateTime = new DateTime(2018, 6, 1, 8, 0, 0), EventLocationLat = 53.577367, EventLocationLng = 20.584959 });
+                context.Events.Add(new Event { GroupId = 5, EventName = "Bieg wokol jeziora", EventDateTime = new DateTime(2018, 7, 20, 14, 0, 0), EventLocationLat = 52.777367, EventLocationLng = 21.484959 });
+                context.Events.Add(new Event { GroupId = 6, EventName = "Wspolne granie na stadionie", EventDateTime = new DateTime(2018, 7, 11, 20, 0, 0), EventLocationLat = 53.447367, EventLocationLng = 20.224959 });
+                context.Events.Add(new Event { GroupId = 7, EventName = "Prelekcja o ziolach bagiennych", EventDateTime = new DateTime(2018, 6, 20, 13, 0, 0), EventLocationLat = 53.677367, EventLocationLng = 20.784959 });
+                context.Events.Add(new Event { GroupId = 8, EventName = "Defilada", EventDateTime = new DateTime(2018, 7, 17, 12, 30, 0), EventLocationLat = 53.677367, EventLocationLng = 20.684959 });
+                context.Events.Add(new Event { GroupId = 7, EventName = "Pokaz broni", EventDateTime = new DateTime(2018, 8, 1, 8, 30, 0), EventLocationLat = 53.777367, EventLocationLng = 20.684959 });
 			}
+            if (!context.Posts.Any()) //tudu
+            {
+                context.Posts.Add(new Post { });
+            }
 		}
 	}
 }
