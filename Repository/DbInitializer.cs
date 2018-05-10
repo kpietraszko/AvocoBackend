@@ -78,23 +78,17 @@ namespace AvocoBackend.Repository
                 context.Events.Add(new Event { GroupId = 1, EventName = "Prelekcja o ziolach bagiennych", EventDateTime = new DateTime(2018, 6, 20, 13, 0, 0), EventLocationLat = 53.677367, EventLocationLng = 20.784959 });*/
                 context.SaveChanges();
             }
-            if (!context.Posts.Any()) //tudu
-            {
-                context.Posts.Add(new Post {GroupId = 1, UserId = 1, Content = "Hej :) Ostatnio zainteresowałem się czołgami z okresu I WŚ. Mogłby ktoś polecic mi jakieś materiały na ten temat? Moze jakieś ksiażki?" });
-                context.Posts.Add(new Post {GroupId = 1, UserId = 6, Content = "Witam zapaleńców militarii! Ostatnio na posiedzeniu wpadłem na genialny pomysł! Postanowiłem stworzyć petycje o dostęp do bronii dla 60+ latków. Dzięki temu starsi ludzie nie mieliby juz problemu z opryskliwą młodzieżą która nie chce im ustepować miejsc w komunikacji miejskiej. Dodatkowo, lunety snajperskie mogłyby pomagać babciom w przeglądaniu terenu. Kto wie, może jakaś starsza pani obezwładniła by jakieś przestepce dzieki swojemu AWP :) Piszie co o tym myślicie milki" });
-                context.Posts.Add(new Post {GroupId = 1, UserId = 3, Content = "Wybiera sie ktos na defilade do Olsztyna? Mój przyjaciel w ostatniej chwili niestety zrezygnował i teraz nie mam z kim iść, a z kimś zawsze weselej. Chetni niech piszą w komentarzach, może zbierzemy jakaś grupe na wspólny wypad!" });
-                context.SaveChanges();
-            }
             if (!context.PostsComments.Any())
             {
-                context.PostsComments.Add(new PostComment { PostId = 1, UserId = 6, Content = "Polecam ten link: https://www.militaryfactory.com/armor/ww1-tanks.asp Maja świetnej jakości zdjęcia oraz bogate opisy" });
-                context.PostsComments.Add(new PostComment { PostId = 2, UserId = 1, Content = "To najgłupszy pomysł o jakim słyszałem. Pozdrawiam" });
-                context.PostsComments.Add(new PostComment { PostId = 2, UserId = 3, Content = "Masz ty rozum i godność człowieka??? Bój sie Boga takie rzeczy pisać. WSTYD!!!!!" });
-                context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Z chęcią wybiorę sie z miłą Panią na defilade! Całuje rączki i już szykuje mojego passata na wyjazd!" });
-                context.PostsComments.Add(new PostComment { PostId = 3, UserId = 1, Content = "Ja też chetnie się wybiore!" });
-                context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Halo halo! Ty młody to jeszcze całe zycie przed tobą to sie jeszcze nachodzisz. Ja tu sie wybieram z Panią sam!" });
-                context.PostsComments.Add(new PostComment { PostId = 3, UserId = 1, Content = "Przepraszam panie Janie, ale słyszałem ze pani Joanna jest meżata wiec chyba nici z wspólnego spotkania:)" });
-                context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Dobra młody nie interesuj sie. Dorosniesz to zmądrzejesz hehe" });
+				var post1 = new Post { GroupId = 1, UserId = 1, Content = "Hej :) Ostatnio zainteresowałem się czołgami z okresu I WŚ. Mogłby ktoś polecic mi jakieś materiały na ten temat? Moze jakieś ksiażki?" };
+				context.PostsComments.Add(new PostComment { Post = post1, UserId = 6, Content = "Polecam ten link: https://www.militaryfactory.com/armor/ww1-tanks.asp Maja świetnej jakości zdjęcia oraz bogate opisy" });
+                //context.PostsComments.Add(new PostComment { PostId = 2, UserId = 1, Content = "To najgłupszy pomysł o jakim słyszałem. Pozdrawiam" });
+                //context.PostsComments.Add(new PostComment { PostId = 2, UserId = 3, Content = "Masz ty rozum i godność człowieka??? Bój sie Boga takie rzeczy pisać. WSTYD!!!!!" });
+                //context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Z chęcią wybiorę sie z miłą Panią na defilade! Całuje rączki i już szykuje mojego passata na wyjazd!" });
+                //context.PostsComments.Add(new PostComment { PostId = 3, UserId = 1, Content = "Ja też chetnie się wybiore!" });
+                //context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Halo halo! Ty młody to jeszcze całe zycie przed tobą to sie jeszcze nachodzisz. Ja tu sie wybieram z Panią sam!" });
+                //context.PostsComments.Add(new PostComment { PostId = 3, UserId = 1, Content = "Przepraszam panie Janie, ale słyszałem ze pani Joanna jest meżata wiec chyba nici z wspólnego spotkania:)" });
+                //context.PostsComments.Add(new PostComment { PostId = 3, UserId = 3, Content = "Dobra młody nie interesuj sie. Dorosniesz to zmądrzejesz hehe" });
                 context.SaveChanges();
             }
 		}
