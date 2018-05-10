@@ -29,7 +29,7 @@ namespace AvocoBackend.Services.Services
 			var absolutePath = Path.Combine(_hostingEnvironment.ContentRootPath, path);
 			try
 			{
-				using (var stream = new FileStream(absolutePath, FileMode.Open))
+				using (var stream = new FileStream(absolutePath, FileMode.Open, FileAccess.Read))
 				{
 					using (var ms = new MemoryStream())
 					{
