@@ -22,10 +22,11 @@ namespace AvocoBackend.Services.Services
 		private readonly IMapper _mapper;
 		private readonly IImageService _imageService;
 		private readonly IClaimsService _claimsService;
+		private readonly IUserService _userService;
 
 		public GroupService(IRepository<Group> groupRepository, IRepository<GroupInterest> groupInterestRepository, IRepository<Post> postRepository,
 			IRepository<PostComment> commentsRepository, IRepository<GroupJoinedUser> groupsUsersRepository,
-			IMapper mapper, IImageService imageService, IClaimsService claimsService)
+			IMapper mapper, IImageService imageService, IClaimsService claimsService, IUserService userService)
 		{
 			_groupRepository = groupRepository;
 			_groupInterestRepository = groupInterestRepository;
@@ -35,6 +36,7 @@ namespace AvocoBackend.Services.Services
 			_mapper = mapper;
 			_imageService = imageService;
 			_claimsService = claimsService;
+			_userService = userService;
 		}
 		public ServiceResult<int> CreateGroup(CreateGroupDTO groupData)
 		{
@@ -173,43 +175,53 @@ namespace AvocoBackend.Services.Services
 			return GetGroupsPosts(dbGroup.Id);
 		}
 
-		public ServiceResult<bool> JoinGroup(int groupId, HttpContext httpContext)
+		public ServiceResult<GroupDTO[]> JoinGroup(int groupId, HttpContext httpContext)
 		{
 			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
 
 			if (userId == null)
 			{
-				return new ServiceResult<bool>("UserId not found in claims");
+				return new ServiceResult<GroupDTO[]>("UserId not found in claims");
 			}
 			var dbGroup = _groupRepository.GetBy(g => g.Id == groupId);
 			if (dbGroup == null)
 			{
-				return new ServiceResult<bool>("Group doesn't exist");
+				return new ServiceResult<GroupDTO[]>("Group doesn't exist");
 			}
 			var userInGroup = _groupsUsersRepository.GetBy(gu => gu.GroupId == groupId && gu.UserId == userId);
 			if (userInGroup != null)
 			{
-				return new ServiceResult<bool>("User already joined this group");
+				return new ServiceResult<GroupDTO[]>("User already joined this group");
 			}
 			_groupsUsersRepository.Insert(new GroupJoinedUser { GroupId = groupId, UserId = (int)userId });
-			return new ServiceResult<bool>(true);
+			var groupsResult =_userService.GetGroups((int)userId);
+			if(groupsResult.IsError)
+			{
+				return new ServiceResult<GroupDTO[]>("Error getting user's groups");
+			}
+			return new ServiceResult<GroupDTO[]>(groupsResult.SuccessResult);
 		}
 
-		public ServiceResult<bool> LeaveGroup(int groupId, HttpContext httpContext)
+		public ServiceResult<GroupDTO[]> LeaveGroup(int groupId, HttpContext httpContext)
 		{
 			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
 
 			if (userId == null)
 			{
-				return new ServiceResult<bool>("UserId not found in claims");
+				return new ServiceResult<GroupDTO[]>("UserId not found in claims");
 			}
 			var userInGroup = _groupsUsersRepository.GetBy(gu => gu.GroupId == groupId && gu.UserId == userId);
 			if (userInGroup == null)
 			{
-				return new ServiceResult<bool>("User not in group");
+				return new ServiceResult<GroupDTO[]>("User not in group");
 			}
 			_groupsUsersRepository.Delete(userInGroup);
-			return new ServiceResult<bool>(true);
+			var groupsResult =_userService.GetGroups((int)userId);
+			if (groupsResult.IsError)
+			{
+				return new ServiceResult<GroupDTO[]>("Error getting user's groups");
+			}
+			return new ServiceResult<GroupDTO[]>(groupsResult.SuccessResult);
 		}
 
 		public ServiceResult<bool> UserInGroup(int groupId, HttpContext httpContext)
@@ -226,6 +238,19 @@ namespace AvocoBackend.Services.Services
 				return new ServiceResult<bool>(false);
 			}
 			return new ServiceResult<bool>(true);
+		}
+
+		public ServiceResult<EventDTO[]> GetEvents(int groupId)
+		{
+			var dbGroup = _groupRepository.GetBy(g => g.Id == groupId);
+			if (dbGroup == null)
+			{
+				return new ServiceResult<EventDTO[]>("Group doesn't exist");
+			}
+			_groupRepository.GetRelatedCollections(dbGroup, g => g.Events);
+			var events = dbGroup.Events;
+			var mappedEvents = _mapper.Map<EventDTO[]>(events);
+			return new ServiceResult<EventDTO[]>(mappedEvents);
 		}
 	}
 }

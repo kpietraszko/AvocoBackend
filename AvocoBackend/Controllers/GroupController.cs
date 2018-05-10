@@ -122,5 +122,15 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpGet("/api/[controller]/{groupId}/[action]")]
+		public IActionResult Events(int groupId)
+		{
+			var result = _groupService.GetEvents(groupId);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
 	}
 }

@@ -46,6 +46,8 @@ namespace AvocoBackend.Api
 			CreateMap<PostComment, CommentDTO>()
 				.ForMember(pc => pc.FirstName, opts => opts.MapFrom(c => c.User.FirstName))
 				.ForMember(pc => pc.LastName, opts => opts.MapFrom(c => c.User.LastName));
+
+			CreateMap<Event, EventDTO>();
 		}
 	}
 

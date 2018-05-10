@@ -24,11 +24,11 @@ namespace AvocoBackend.Repository
 					new Interest { InterestName = "Fotografia" });
 				context.SaveChanges();
 			}
-			if(!context.Groups.Any())
+			if (!context.Groups.Any())
 			{
 				context.Groups.AddRange(
-					new Group { GroupName = "Militaria"},
-					new Group { GroupName = "Gotowanie w lesie"});
+					new Group { GroupName = "Militaria" },
+					new Group { GroupName = "Gotowanie w lesie" });
 				context.SaveChanges();
 			}
 			if (!context.UsersInterests.Any())
@@ -47,12 +47,17 @@ namespace AvocoBackend.Repository
 				context.Friends.Add(new Friend { User1Id = 6, User2Id = 8 });
 			}
 			context.SaveChanges();
-			if(!context.GroupsJoinedUsers.Any())
+			if (!context.GroupsJoinedUsers.Any())
 			{
 				context.GroupsJoinedUsers.AddRange(new GroupJoinedUser { UserId = 6, GroupId = 1 },
-					new GroupJoinedUser { UserId = 6, GroupId = 2});
+					new GroupJoinedUser { UserId = 6, GroupId = 2 });
+				context.SaveChanges();
+			}
+			if (!context.Events.Any())
+			{
+				context.Events.Add(new Event { GroupId = 1, EventName = "ASG w terenie", EventDateTime = new DateTime(2018, 5, 29, 16, 0, 0), EventLocationLat = 53.777367, EventLocationLng = 20.484959 });
 				context.SaveChanges();
 			}
 		}
-}
+	}
 }
