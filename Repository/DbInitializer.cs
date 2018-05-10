@@ -33,7 +33,7 @@ namespace AvocoBackend.Repository
 			{
 				context.Groups.AddRange(
 					new Group { GroupName = "Militaria" },
-					new Group { GroupName = "Gotowanie w lesi+e" },
+					new Group { GroupName = "Gotowanie w lesie" },
                     new Group { GroupName = "Biegacze w Olsztynie" },
                     new Group { GroupName = "Poczatkujacy programisci" },
                     new Group { GroupName = "Fotografowie przyrody" });
