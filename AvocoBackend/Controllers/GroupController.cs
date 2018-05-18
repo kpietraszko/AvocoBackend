@@ -132,5 +132,26 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpDelete("/api/[controller]/[action]/{postId}")]
+		public IActionResult DeletePost(int postId)
+		{
+			var result = _groupService.DeletePost(postId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpDelete("/api/[controller]/[action]/{commentId}")]
+		public IActionResult DeleteComment(int commentId)
+		{
+			var result = _groupService.DeleteComment(commentId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+
 	}
 }

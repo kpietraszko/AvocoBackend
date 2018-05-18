@@ -42,14 +42,17 @@ namespace AvocoBackend.Services.Services
 		{
 			var newGroup = _mapper.Map<Group>(groupData);
 			_groupRepository.Insert(newGroup);
-			var result = _imageService.SaveImages(newGroup.Id, groupData.GroupImage, "Groups");
-			if (result.IsError)
+			if (groupData.GroupImage != null)
 			{
-				return new ServiceResult<int>(result.Errors);
+				var result = _imageService.SaveImages(newGroup.Id, groupData.GroupImage, "Groups");
+				if (result.IsError)
+				{
+					return new ServiceResult<int>(result.Errors);
+				}
+				var paths = result.SuccessResult;
+				_mapper.Map(paths, newGroup);
+				_groupRepository.Update(newGroup);
 			}
-			var paths = result.SuccessResult;
-			_mapper.Map(paths, newGroup);
-			_groupRepository.Update(newGroup);
 			return new ServiceResult<int>(newGroup.Id);
 		}
 
@@ -123,16 +126,17 @@ namespace AvocoBackend.Services.Services
 			{
 				return new ServiceResult<PostDTO[]>("Group doesn't exist");
 			}
-			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId, p => p.User).OrderByDescending(p => p.Id).ToArray();
+			var groupsPosts = _postRepository.GetAllBy(p => p.GroupId == groupId, p => p.User, p => p.Group).OrderByDescending(p => p.Id).ToArray();
 			foreach (var post in groupsPosts)
 			{
 				_postRepository.GetRelatedCollectionsWithObject(post, p => p.PostComments, pc => pc.User);
 			}
-			var mappedPosts = _mapper.Map<PostDTO[]>(groupsPosts); //dolaczyc jakos zdjecie autora postu i zdjecia autorow komentarzy
+			var mappedPosts = _mapper.Map<PostDTO[]>(groupsPosts);
 			foreach (var post in mappedPosts)
 			{
 				post.FirstName = post.User.FirstName;
 				post.LastName = post.User.LastName;
+				post.GroupName = post.Group.GroupName;
 				var authorImage = _imageService.GetImage(post.User.ImageSmallPath);
 				post.UserImage = authorImage.SuccessResult;
 
@@ -144,6 +148,27 @@ namespace AvocoBackend.Services.Services
 			}
 
 			return new ServiceResult<PostDTO[]>(mappedPosts);
+		}
+
+		public ServiceResult<PostDTO[]> DeletePost(int postId, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+			if (userId == null)
+			{
+				return new ServiceResult<PostDTO[]>("UserId not found in claims");
+			}
+			var dbPost = _postRepository.GetBy(p => p.Id == postId);
+			if (dbPost == null)
+			{
+				return new ServiceResult<PostDTO[]>("Post doesn't exist");
+			}
+			if (dbPost.UserId != userId)
+			{
+				return new ServiceResult<PostDTO[]>("Unauthorized to delete this post");
+			}
+			_commentsRepository.Delete(c => c.PostId == postId);
+			_postRepository.Delete(dbPost);
+			return GetGroupsPosts(dbPost.GroupId);
 		}
 
 		public ServiceResult<PostDTO[]> AddComment(int postId, string commentContent, HttpContext httpContext)
@@ -175,6 +200,27 @@ namespace AvocoBackend.Services.Services
 			return GetGroupsPosts(dbGroup.Id);
 		}
 
+		public ServiceResult<PostDTO[]> DeleteComment(int commentId, HttpContext httpContext)
+		{
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+			if (userId == null)
+			{
+				return new ServiceResult<PostDTO[]>("UserId not found in claims");
+			}
+			var dbComment = _commentsRepository.GetBy(c => c.Id == commentId, c => c.Post);
+			if (dbComment == null)
+			{
+				return new ServiceResult<PostDTO[]>("Comment doesn't exist");
+			}
+			if (dbComment.UserId != userId)
+			{
+				return new ServiceResult<PostDTO[]>("Unauthorized to delete this comment");
+			}
+			_commentsRepository.Delete(dbComment);
+			var groupId = dbComment.Post.GroupId;
+			return GetGroupsPosts(groupId); //nie ma includa, moze nie zadzialac
+		}
+
 		public ServiceResult<GroupDTO[]> JoinGroup(int groupId, HttpContext httpContext)
 		{
 			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
@@ -195,7 +241,7 @@ namespace AvocoBackend.Services.Services
 			}
 			_groupsUsersRepository.Insert(new GroupJoinedUser { GroupId = groupId, UserId = (int)userId });
 			var groupsResult =_userService.GetGroups((int)userId);
-			if(groupsResult.IsError)
+			if (groupsResult.IsError)
 			{
 				return new ServiceResult<GroupDTO[]>("Error getting user's groups");
 			}
