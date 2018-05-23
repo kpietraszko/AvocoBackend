@@ -14,10 +14,13 @@ namespace AvocoBackend.Services.Interfaces
 		ServiceResult<byte[]> GetImage(int groupId);
 		ServiceResult<PostDTO[]> AddPost(int groupId, string postContent, HttpContext httpContext);
 		ServiceResult<PostDTO[]> GetGroupsPosts(int groupId);
+		ServiceResult<PostDTO[]> DeletePost(int postId, HttpContext httpContext);
 		ServiceResult<PostDTO[]> AddComment(int postId, string commentContent, HttpContext httpContext);
+		ServiceResult<PostDTO[]> DeleteComment(int commentId, HttpContext httpContext);
 		ServiceResult<GroupDTO[]> JoinGroup(int groupId, HttpContext httpContext);
 		ServiceResult<GroupDTO[]> LeaveGroup(int groupId, HttpContext httpContext);
 		ServiceResult<bool> UserInGroup(int groupId, HttpContext httpContext);
 		ServiceResult<EventDTO[]> GetEvents(int groupId);
+		ServiceResult<GroupDTO[]> GetAllGroups();
 	 }
 }
