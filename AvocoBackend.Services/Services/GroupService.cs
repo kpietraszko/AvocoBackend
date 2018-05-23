@@ -298,5 +298,12 @@ namespace AvocoBackend.Services.Services
 			var mappedEvents = _mapper.Map<EventDTO[]>(events);
 			return new ServiceResult<EventDTO[]>(mappedEvents);
 		}
+
+		public ServiceResult<GroupDTO[]> GetAllGroups()
+		{
+			var groups = _groupRepository.GetAll();
+			var groupsMapped = _mapper.Map<GroupDTO[]>(groups);
+			return new ServiceResult<GroupDTO[]>(groupsMapped);
+		}
 	}
 }

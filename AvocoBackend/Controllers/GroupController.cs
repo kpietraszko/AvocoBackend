@@ -152,6 +152,16 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpGet]
+		public IActionResult AllGroups()
+		{
+			var result = _groupService.GetAllGroups();
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
 
 	}
 }

@@ -21,5 +21,6 @@ namespace AvocoBackend.Services.Interfaces
 		ServiceResult<GroupDTO[]> LeaveGroup(int groupId, HttpContext httpContext);
 		ServiceResult<bool> UserInGroup(int groupId, HttpContext httpContext);
 		ServiceResult<EventDTO[]> GetEvents(int groupId);
+		ServiceResult<GroupDTO[]> GetAllGroups();
 	 }
 }
