@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+[Aa]voco[Bb]ackend/appsettings.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
