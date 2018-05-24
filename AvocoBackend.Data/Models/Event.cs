@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace AvocoBackend.Data.Models
@@ -8,11 +9,12 @@ namespace AvocoBackend.Data.Models
     {
 		public int GroupId { get; set; }
 		public Group Group { get; set; }
+		[Required]
 		public string EventName { get; set; }
 		public string EventDescription { get; set; }
 		public DateTime EventDateTime { get; set; }
-		public double EventLocationLat { get; set; }
-		public double EventLocationLng { get; set; }
+		public double? EventLocationLat { get; set; }
+		public double? EventLocationLng { get; set; }
 		public ICollection<EventComment> EventComments { get; set; }
 		public ICollection<EventJoinedUser> EventJoinedUsers { get; set; }
 

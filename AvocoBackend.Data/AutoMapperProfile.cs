@@ -48,6 +48,9 @@ namespace AvocoBackend.Api
 				.ForMember(pc => pc.LastName, opts => opts.MapFrom(c => c.User.LastName));
 
 			CreateMap<Event, EventDTO>();
+
+			CreateMap<EventDTO, Event>()
+				.ForSourceMember(e => e.Id, opts => opts.Ignore());
 		}
 	}
 

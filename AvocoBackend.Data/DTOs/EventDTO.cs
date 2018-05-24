@@ -8,6 +8,7 @@ namespace AvocoBackend.Data.DTOs
 	{
 		public int Id { get; set; }
 		public string EventName { get; set; }
+		public string EventDescription { get; set; }
 		public DateTime EventDateTime { get; set; }
 		public double EventLocationLat { get; set; }
 		public double EventLocationLng { get; set; }

@@ -42,6 +42,7 @@ namespace AvocoBackend
 			services.AddTransient(typeof(IImageService), typeof(ImageService));
 			services.AddTransient(typeof(IGroupService), typeof(GroupService));
 			services.AddTransient(typeof(IHomeService), typeof(HomeService));
+			services.AddTransient(typeof(IEventService), typeof(EventService));
 			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
