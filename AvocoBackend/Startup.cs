@@ -19,6 +19,7 @@ using AvocoBackend.Repository;
 using AvocoBackend.Repository.Interfaces;
 using AvocoBackend.Services.Interfaces;
 using AvocoBackend.Services.Services;
+using System.Globalization;
 
 namespace AvocoBackend
 {
@@ -66,7 +67,12 @@ namespace AvocoBackend
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
-			if (env.IsDevelopment())
+            var cultureInfo = new CultureInfo("en-US");
+            cultureInfo.NumberFormat.CurrencySymbol = "€";
+
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+            if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
 			}
