@@ -7,6 +7,6 @@ namespace AvocoBackend.Services.Interfaces
 {
 	public interface IEventService
 	{
-		ServiceResult<int> CreateEvent(EventDTO eventData);
+		ServiceResult<int> CreateEvent(EventDTO eventData, int groupId);
 	}
 }

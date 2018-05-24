@@ -19,9 +19,10 @@ namespace AvocoBackend.Services.Services
 			_eventRepository = eventRepository;
 			_mapper = mapper;
 		}
-		public ServiceResult<int> CreateEvent(EventDTO eventData)
+		public ServiceResult<int> CreateEvent(EventDTO eventData, int groupId)
 		{
 			var mappedEvent = _mapper.Map<Event>(eventData);
+			mappedEvent.GroupId = groupId;
 			_eventRepository.Insert(mappedEvent);
 			return new ServiceResult<int>(mappedEvent.Id);
 		}

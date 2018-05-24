@@ -20,14 +20,14 @@ namespace AvocoBackend.Api.Controllers
 		{
 			_eventService = eventService;
 		}
-		[HttpPost]
-		public IActionResult Create(EventDTO newEvent)
+		[HttpPost("/api/[controller]/[action]/{groupId}")]
+		public IActionResult Create([FromForm]EventDTO newEvent, int groupId)
 		{
 			if (!ModelState.IsValid)
 			{
 				return StatusCode(422, ModelState);
 			}
-			var result = _eventService.CreateEvent(newEvent);
+			var result = _eventService.CreateEvent(newEvent, groupId);
 			if (result.IsError)
 			{
 				return StatusCode(422, result.Errors);
