@@ -48,8 +48,11 @@ namespace AvocoBackend.Services.Services
 				post.FirstName = post.User.FirstName;
 				post.LastName = post.User.LastName;
 				post.GroupName = post.Group.GroupName;
-				var authorImage = _imageService.GetImage(post.User.ImageSmallPath);
-				post.UserImage = authorImage.SuccessResult;
+				if (post.User.ImageSmallPath != null)
+				{
+					var authorImage = _imageService.GetImage(post.User.ImageSmallPath);
+					post.UserImage = authorImage.SuccessResult;
+				}
 			}
 
 			return new ServiceResult<PostDTO[]>(mappedPosts);
