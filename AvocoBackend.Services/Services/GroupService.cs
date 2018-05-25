@@ -297,7 +297,7 @@ namespace AvocoBackend.Services.Services
 				return new ServiceResult<EventDTO[]>("Group doesn't exist");
 			}
 			_groupRepository.GetRelatedCollections(dbGroup, g => g.Events);
-			var events = dbGroup.Events;
+			var events = dbGroup.Events.OrderByDescending(e => e.EventDateTime);
 			var mappedEvents = _mapper.Map<EventDTO[]>(events);
 			return new ServiceResult<EventDTO[]>(mappedEvents);
 		}
