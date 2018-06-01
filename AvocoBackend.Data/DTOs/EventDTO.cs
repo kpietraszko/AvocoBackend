@@ -15,5 +15,7 @@ namespace AvocoBackend.Data.DTOs
 		public DateTime EventDateTime { get; set; }
 		public double? EventLocationLat { get; set; }
 		public double? EventLocationLng { get; set; }
+		public bool? Joined { get; set; }
+		public string GroupName { get; set; }
 	}
 }

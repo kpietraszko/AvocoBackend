@@ -34,5 +34,45 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpGet("/api/[controller]/{eventId:int}")]
+		public IActionResult GetDetails(int eventId)
+		{
+			var result = _eventService.GetDetails(eventId, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpGet("/api/[controller]/{eventId:int}/interestedUsers")]
+		public IActionResult GetInterestedUsers(int eventId)
+		{
+			var result = _eventService.GetInterestedUsers(eventId);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpGet("/api/[controller]/{eventId:int}/groupImage")]
+		public IActionResult GetGroupImage(int eventId)
+		{
+			var result = _eventService.GetGroupImage(eventId);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpPut("/api/[controller]/{eventId:int}/interested/{interested:bool}")]
+		public IActionResult SetInterested(int eventId, bool interested)
+		{
+			var result = _eventService.SetInterested(eventId, interested, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
 	}
 }
