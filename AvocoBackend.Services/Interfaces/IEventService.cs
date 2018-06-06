@@ -13,5 +13,6 @@ namespace AvocoBackend.Services.Interfaces
 		ServiceResult<UserDTO[]> GetInterestedUsers(int eventId);
 		ServiceResult<byte[]> GetGroupImage(int eventId);
 		ServiceResult<bool> SetInterested(int eventId, bool interested, HttpContext httpContext);
+		ServiceResult<EventDTO[]> GetUserEvents(int userId);
 	}
 }

@@ -126,5 +126,17 @@ namespace AvocoBackend.Services.Services
 			_eventUsersRepository.Delete(e => e.EventId == eventId && e.UserId == userId);
 			return new ServiceResult<bool>(false);
 		}
+
+		public ServiceResult<EventDTO[]> GetUserEvents(int userId)
+		{
+			var events = _eventUsersRepository.GetAllBy(e => e.UserId == userId, e => e.Event, e => e.Event.Group)
+				.Select(e => e.Event);
+			var mappedEvents = _mapper.Map<EventDTO[]>(events);
+			foreach (var ev in mappedEvents)
+			{
+				ev.GroupName = events.FirstOrDefault(e => e.Id == ev.Id).Group.GroupName;
+			}
+			return new ServiceResult<EventDTO[]>(mappedEvents);
+		}
 	}
 }

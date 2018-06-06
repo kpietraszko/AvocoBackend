@@ -74,5 +74,15 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpGet("/api/[controller]/user/{userId:int}")]
+		public IActionResult UserEvents(int userId)
+		{
+			var result = _eventService.GetUserEvents(userId);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
 	}
 }
