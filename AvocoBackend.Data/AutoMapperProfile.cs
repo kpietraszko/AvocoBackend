@@ -51,6 +51,10 @@ namespace AvocoBackend.Api
 
 			CreateMap<EventDTO, Event>()
 				.ForSourceMember(e => e.Id, opts => opts.Ignore());
+
+			CreateMap<EventComment, EventCommentDTO>();
+
+			CreateMap<EventCommentDTO, EventComment>();
 		}
 	}
 

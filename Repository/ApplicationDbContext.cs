@@ -77,6 +77,7 @@ namespace AvocoBackend.Repository
 		public DbSet<Interest> Interests{ get; set;}
 		public DbSet<UserInterest> UsersInterests{ get; set;}
 		public DbSet<GroupInterest> GroupsInterests{ get; set;}
+		public DbSet<EventComment> EventComments { get; set; }
 
 	}
 }

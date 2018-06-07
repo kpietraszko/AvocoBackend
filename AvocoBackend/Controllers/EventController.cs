@@ -84,5 +84,25 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[HttpGet("/api/[controller]/{eventId:int}/[action]")]
+		public IActionResult Comments(int eventId)
+		{
+			var result = _eventService.GetEventComments(eventId);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
+		[HttpPost("/api/[controller]/{eventId:int}/[action]")]
+		public IActionResult AddComment(int eventId, [FromForm]string comment)
+		{
+			var result = _eventService.AddComment(eventId, comment, HttpContext);
+			if (result.IsError)
+			{
+				return StatusCode(422, result.Errors);
+			}
+			return Ok(result.SuccessResult);
+		}
 	}
 }

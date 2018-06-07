@@ -16,16 +16,18 @@ namespace AvocoBackend.Services.Services
 	{
 		private readonly IRepository<Event> _eventRepository;
 		private readonly IRepository<EventJoinedUser> _eventUsersRepository;
+		private readonly IRepository<EventComment> _eventCommentsRepository;
 		private readonly IClaimsService _claimsService;
 		private readonly IImageService _imageService;
 		private readonly IGroupService _groupService;
 		private readonly IMapper _mapper;
 
-		public EventService(IRepository<Event> eventRepository, IRepository<EventJoinedUser> eventUsersRepository,
+		public EventService(IRepository<Event> eventRepository, IRepository<EventJoinedUser> eventUsersRepository, IRepository<EventComment> eventCommentsRepository,
 			IClaimsService claimsService, IImageService imageService, IGroupService groupService, IMapper mapper)
 		{
 			_eventRepository = eventRepository;
 			_eventUsersRepository = eventUsersRepository;
+			_eventCommentsRepository = eventCommentsRepository;
 			_claimsService = claimsService;
 			_imageService = imageService;
 			_groupService = groupService;
@@ -137,6 +139,52 @@ namespace AvocoBackend.Services.Services
 				ev.GroupName = events.FirstOrDefault(e => e.Id == ev.Id).Group.GroupName;
 			}
 			return new ServiceResult<EventDTO[]>(mappedEvents);
+		}
+
+		public ServiceResult<EventCommentDTO[]> GetEventComments(int eventId)
+		{
+			var dbEvent = _eventRepository.GetBy(e => e.Id == eventId);
+			if (dbEvent == null)
+			{
+				return new ServiceResult<EventCommentDTO[]>("Event doesn't exist");
+			}
+			var comments = _eventCommentsRepository.GetAllBy(c => c.EventId == eventId, c => c.User);
+			var mappedComments = _mapper.Map<EventCommentDTO[]>(comments);
+			foreach (var comment in mappedComments)
+			{
+				if (comment.User.ImageSmallPath != null)
+				{
+					var imageResult = _imageService.GetImage(comment.User.ImageSmallPath);
+					if (!imageResult.IsError)
+					{
+						comment.Image = imageResult.SuccessResult;
+					}
+					comment.FirstName = comment.User.FirstName;
+					comment.LastName = comment.User.LastName;
+				}
+			}
+			return new ServiceResult<EventCommentDTO[]>(mappedComments);
+		}
+
+		public ServiceResult<EventCommentDTO[]> AddComment(int eventId, string content, HttpContext httpContext)
+		{
+			if (String.IsNullOrWhiteSpace(content))
+			{
+				return new ServiceResult<EventCommentDTO[]>("Comment can't be empty");
+			}
+			var dbEvent = _eventRepository.GetBy(e => e.Id == eventId);
+			if (dbEvent == null)
+			{
+				return new ServiceResult<EventCommentDTO[]>("Event doesn't exist");
+			}
+			var userId = _claimsService.GetFromClaims<int?>(httpContext, ClaimTypes.Sid);
+			if (userId == null)
+			{
+				return new ServiceResult<EventCommentDTO[]>("UserId not found in claims");
+			}
+			var newComment = new EventComment { EventId = eventId, UserId = (int)userId, Content = content};
+			_eventCommentsRepository.Insert(newComment);
+			return GetEventComments(eventId);
 		}
 	}
 }

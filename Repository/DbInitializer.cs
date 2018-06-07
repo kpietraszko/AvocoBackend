@@ -54,10 +54,12 @@ namespace AvocoBackend.Repository
 				context.Friends.Add(new Friend { User1Id = 6, User2Id = 8 });
 			}
 			context.SaveChanges();
-			
+
 			if (!context.Events.Any())
 			{
-				var group = new Group { GroupName = "Militaria", GroupDescription = "Grupa zrzeszająca miłośników militarii, wojska, bronii oraz szeroko pojętego survivalu.", GroupPicture = "Images\\Groups\\1.png" };
+				var group = context.Groups.FirstOrDefault(g => g.GroupName == "Militaria");
+				if (group == null)
+					group = new Group { GroupName = "Militaria", GroupDescription = "Grupa zrzeszająca miłośników militarii, wojska, bronii oraz szeroko pojętego survivalu.", GroupPicture = "Images\\Groups\\1.png" };
 				var event1 = new Event { Group = group, EventName = "ASG w terenie", EventDescription = "Strzelanie z kulek do ludzi", EventDateTime = new DateTime(2018, 5, 29, 16, 0, 0), EventLocationLat = 53.777367, EventLocationLng = 20.484959 };
 				var event2 = new Event { Group = group, EventName = "Wyscigi czołgów", EventDateTime = new DateTime(2018, 6, 11, 8, 30, 0), EventLocationLat = 53.777367, EventLocationLng = 20.484959 };
 				var eventsToAdd = new List<Event>();
@@ -85,6 +87,9 @@ namespace AvocoBackend.Repository
 				//	context.EventsJoinedUsers.Add(new EventJoinedUser { EventId = event1.Id, UserId = 1 });
 				//	context.EventsJoinedUsers.Add(new EventJoinedUser { EventId = event2.Id, UserId = 1 });
 				//}
+				context.EventComments.Add(new EventComment { UserId = 1, EventId = event1.Id, Content = "Testowy komentarz" });
+				context.EventsJoinedUsers.AddRange(new EventJoinedUser { EventId = event1.Id, UserId = 1 },
+					new EventJoinedUser { EventId = event2.Id, UserId = 1 });
 				context.SaveChanges();
 			}
 			if (!context.GroupsJoinedUsers.Any())
@@ -113,11 +118,16 @@ namespace AvocoBackend.Repository
 				context.PostsComments.Add(new PostComment { Post = post3, UserId = 6, Content = "Dobra młody nie interesuj sie. Dorosniesz to zmądrzejesz hehe" });
 				context.SaveChanges();
 			}
+			if (!context.GroupsInterests.Any())
+			{
+				var group = context.Groups.FirstOrDefault(g => g.GroupName == "Militaria");
+				if (group == null)
+					group = new Group { GroupName = "Militaria", GroupDescription = "Grupa zrzeszająca miłośników militarii, wojska, bronii oraz szeroko pojętego survivalu.", GroupPicture = "Images\\Groups\\1.png" };
+				var interest = context.Interests.FirstOrDefault(i => i.InterestName == "Wojskowosc");
+				if (interest == null)
+					interest = new Interest { InterestName = "Wojskowosc" };
+				context.GroupsInterests.Add(new GroupInterest { GroupId = group.Id, InterestId = 0 });
+			}
 		}
 	}
 }
-
-// id sie zmieniaja przy kazdym seedzie wiec gl, nie wiem jak teraz to zrobic jak sie moga zmieniac skoro w bazie jest zapisane tak i tak i zaden kurwa inny 
-// bowiem jak cos usuniesz  z tabeli i potem znowu dodasz to id jest wieksze
-//kurwa caly seed poszedl w pizdu w takim razie wtf
-//bo nie mozemy sie do groupid i userid odwolywac
