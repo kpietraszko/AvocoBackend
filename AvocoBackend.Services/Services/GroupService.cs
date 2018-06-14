@@ -145,8 +145,11 @@ namespace AvocoBackend.Services.Services
 
 				foreach (var comment in post.PostComments)
 				{
-					var commentAuthorImage = _imageService.GetImage(comment.User.ImageSmallPath);
-					comment.UserImage = commentAuthorImage.SuccessResult;
+					if (comment.User.ImageSmallPath != null)
+					{
+						var commentAuthorImage = _imageService.GetImage(comment.User.ImageSmallPath);
+						comment.UserImage = commentAuthorImage.SuccessResult;
+					}
 				}
 			}
 

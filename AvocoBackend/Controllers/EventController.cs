@@ -74,6 +74,7 @@ namespace AvocoBackend.Api.Controllers
 			}
 			return Ok(result.SuccessResult);
 		}
+		[AllowAnonymous]
 		[HttpGet("/api/[controller]/user/{userId:int}")]
 		public IActionResult UserEvents(int userId)
 		{
